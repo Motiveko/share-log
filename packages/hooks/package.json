@@ -1,0 +1,37 @@
+{
+  "name": "@repo/hooks",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "sideEffects": false,
+  "files": [
+    "dist/**",
+    "dist"
+  ],
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src/",
+    "test": "jest"
+  },
+  "jest": {
+    "preset": "@repo/jest-presets/browser"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/jest-presets": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.12.0",
+    "jest": "^29.7.0",
+    "tsup": "^8.4.0",
+    "typescript": "5.7.3"
+  },
+  "peerDependencies": {
+    "@types/react": ">=19",
+    "react": ">=19"
+  }
+}

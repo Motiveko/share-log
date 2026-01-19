@@ -1,0 +1,132 @@
+# 실행: docker compose -f docker-compose-local.yml up -d
+# 중지: docker compose -f docker-compose-local.yml down
+# docker-compose로 실행하면 네트워크가 생성되어서 서로 container name으로 통신가능하다. (e.g. 127.0.0.1:5432 -> postgresql15:5432)
+
+version: "3.8"
+
+services:
+  # 1. PostgreSQL 설정
+  db:
+    image: postgres:15 # 요청하신 15 버전 사용
+    container_name: postgresql15
+    restart: always # Docker Desktop 실행 시 항상 자동 재시작
+    ports:
+      - "5432:5432" # 로컬호스트 5432 포트 연결
+    environment:
+      POSTGRES_USER: turbo-starter # 사용할 유저명 (원하는대로 변경)
+      POSTGRES_PASSWORD: 1234 # 사용할 비밀번호 (원하는대로 변경)
+      POSTGRES_DB: turbo-starter-dev # 기본 생성할 DB명
+    volumes:
+      - ${HOME}/docker-data/postgres/data:/var/lib/postgresql/data # [중요] 데이터를 로컬 폴더에 저장하여 삭제 방지
+    networks:
+      - my-app-network
+  # 2. Redis 설정
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always # Docker Desktop 실행 시 항상 자동 재시작
+    ports:
+      - "6379:6379" # 로컬호스트 6379 포트 연결
+    command: redis-server --save 60 1 --loglevel warning # 데이터 지속성 옵션 (선택사항)
+    volumes:
+      - ${HOME}/docker-data/redis/data:/data # [중요] Redis 데이터를 로컬 폴더에 저장
+    networks:
+      - my-app-network
+  # 3. Redis Insight (UI 모니터링)
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: local-redis-insight
+    restart: always
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+    volumes:
+      - ${HOME}/docker-data/redisinsight/dat:/data
+    networks:
+      - my-app-network
+  # 4. MinIO 스토리지
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: minio
+    restart: always
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000" # API 포트
+      - "9001:9001" # 관리자 UI 포트
+    environment:
+      - MINIO_ROOT_USER=motiveko # 관리자 아이디 (변경 필수)
+      - MINIO_ROOT_PASSWORD=A!s2d3f4g5 # 관리자 비밀번호 (변경 필수)
+    volumes:
+      - ${HOME}/docker-data/minio_data:/data # 데이터 저장 경로
+    networks:
+      - my-app-network
+  # 5. BullMQ 모니터링
+  bullboard:
+    image: venatum/bull-board:latest
+    restart: always # Docker Desktop 실행 시 항상 자동 재시작
+    container_name: bullboard
+    ports:
+      - "3009:3000"
+    environment:
+      # BullMQ 사용
+      QUEUE_TYPE: "BULLMQ"
+      # Redis 연결
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      # 필요 시
+      # REDIS_PASSWORD: "yourpassword"
+      # BASE_PATH: "/admin/queues"
+      # USERNAME/PASSWORD(이미지마다 키가 다를 수 있음): 문서 확인 권장
+    depends_on:
+      - redis
+    networks:
+      - my-app-network
+
+  # 6. 로그 저장소
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    restart: always # Docker Desktop 실행 시 항상 자동 재시작
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ${HOME}/docker-data/loki/data:/loki # 로그 데이터 영속성
+    networks:
+      - my-app-network
+
+  # 7. 로그 수집기 (Winston 로그 파일 읽기)
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    restart: always # Docker Desktop 실행 시 항상 자동 재시작
+    volumes:
+      - ../logs:/var/log/apps # 호스트의 로그 폴더 마운트 (promtail-config.yml과 경로 일치)
+      - ./promtail-config.yml:/etc/promtail/config.yml
+      - ${HOME}/docker-data/promtail:/var/promtail # positions 파일 영구 저장
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - my-app-network
+
+  # 8. 조회 UI
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always # Docker Desktop 실행 시 항상 자동 재시작
+    ports:
+      - "3101:3000" # Grafana 기본 포트는 3000
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=secret
+    volumes:
+      - ${HOME}/docker-data/grafana/data:/var/lib/grafana # 대시보드, 데이터소스 설정 영속성
+    depends_on:
+      - loki
+    networks:
+      - my-app-network
+networks:
+  my-app-network:
+    driver: bridge
+

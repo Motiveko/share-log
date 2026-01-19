@@ -1,0 +1,101 @@
+name: Deploy Web
+
+on:
+  workflow_dispatch:
+
+env:
+  WEB_IMAGE_NAME: ${{ github.repository }}/web
+
+jobs:
+  deploy-web:
+    runs-on: self-hosted
+
+    steps:
+      - name: Set version from git hash
+        id: version
+        run: |
+          echo "version=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy env file
+        run: |
+          SOURCE=~/envs/turborepo-starter/apps/web/.env.production
+          DEST=./apps/web/.env.production
+
+          if [ ! -f "$SOURCE" ]; then
+            echo "❌ Source env file not found: $SOURCE"
+            exit 1
+          fi
+
+          cp "$SOURCE" "$DEST"
+
+          if [ ! -f "$DEST" ]; then
+            echo "❌ Failed to copy env file to: $DEST"
+            exit 1
+          fi
+
+          echo "✅ Env file copied successfully ($(wc -l < "$DEST") lines)"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/web/Dockerfile
+          push: false
+          load: true
+          tags: |
+            ${{ env.WEB_IMAGE_NAME }}:${{ steps.version.outputs.version }}
+            ${{ env.WEB_IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Stop existing container (if running)
+        run: |
+          if docker ps -a --format '{{.Names}}' | grep -q "^web$"; then
+            echo "Stopping and removing existing container: web"
+            docker stop web || true
+            docker rm web || true
+          fi
+
+      - name: Cleanup env file
+        if: always()
+        run: |
+          rm -f ./apps/web/.env.production
+
+      - name: Run container
+        run: |
+          docker run -d \
+            --network=docker_my-app-network \
+            --name web \
+            --restart unless-stopped \
+            -p 4321:4321 \
+            -v ~/logs:/app/logs \
+            ${{ env.WEB_IMAGE_NAME }}:latest
+
+      - name: Cleanup old images
+        run: |
+          # 최신 2개 이미지 유지, 나머지 삭제 (생성 시간 기준)
+          docker images "${{ env.WEB_IMAGE_NAME }}" --format "{{.ID}} {{.CreatedAt}}" | \
+            sort -k2 -r | \
+            tail -n +3 | \
+            awk '{print $1}' | \
+            xargs -r docker rmi || true
+
+      - name: Verify deployment
+        run: |
+          echo "Waiting for container to be healthy..."
+          sleep 5
+
+          if docker ps --filter "name=web" --filter "status=running" | grep -q web; then
+            echo "✅ Container web is running successfully!"
+            docker logs --tail 20 web
+          else
+            echo "❌ Container failed to start"
+            docker logs web
+            exit 1
+          fi

@@ -1,0 +1,44 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /var/promtail/positions.yaml
+  sync_period: 10s # 위치 정보를 10초마다 디스크에 저장
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: node-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nodejs_monorepo
+          # 호스트의 로그 폴더 전체를 마운트했다고 가정
+          __path__: /var/log/apps/**/*.log
+
+    pipeline_stages:
+      # 디렉토리 구조가 /var/log/apps/{서비스명}/{파일명} 이므로
+      # 경로에서 서비스명을 바로 추출 가능
+      - regex:
+          source: filename
+          expression: "/var/log/apps/(?P<service>[^/]+)/.*"
+      - labels:
+          service:
+
+      # JSON 파싱 추가
+      - json:
+          expressions:
+            level: level # JSON의 level 필드 추출
+            method: rq.method # 중첩 필드도 가능
+            url: rq.url
+            code: res.code
+
+      # 추출한 값을 레이블로 지정 (인덱싱됨)
+      - labels:
+          level:
+          method:
+          url:
+          code:

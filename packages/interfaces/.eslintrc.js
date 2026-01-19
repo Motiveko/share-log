@@ -1,0 +1,7 @@
+/** @type {import("eslint").Linter.Config} */
+module.exports = {
+  extends: ["@repo/eslint-config/index.js"],
+  env: {
+    jest: true,
+  },
+};

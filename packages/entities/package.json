@@ -1,0 +1,28 @@
+{
+  "name": "@repo/entities",
+  "version": "0.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "lint": "eslint src/ --fix"
+  },
+  "exports": {
+    "./auth-provider": "./src/auth-provider.ts",
+    "./base": "./src/base.ts",
+    "./push-subscription": "./src/push-subscription.ts",
+    "./todo": "./src/todo.ts",
+    "./user": "./src/user.ts",
+    "./video": "./src/video.ts"
+  },
+  "dependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^29.7.0",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/interfaces": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "5.7.3"
+  }
+}
