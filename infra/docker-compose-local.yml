@@ -13,9 +13,9 @@ services:
     ports:
       - "5432:5432" # 로컬호스트 5432 포트 연결
     environment:
-      POSTGRES_USER: turbo-starter # 사용할 유저명 (원하는대로 변경)
+      POSTGRES_USER: share-log # 사용할 유저명 (원하는대로 변경)
       POSTGRES_PASSWORD: 1234 # 사용할 비밀번호 (원하는대로 변경)
-      POSTGRES_DB: turbo-starter-dev # 기본 생성할 DB명
+      POSTGRES_DB: share-log-dev # 기본 생성할 DB명
     volumes:
       - ${HOME}/docker-data/postgres/data:/var/lib/postgresql/data # [중요] 데이터를 로컬 폴더에 저장하여 삭제 방지
     networks:
@@ -129,4 +129,3 @@ services:
 networks:
   my-app-network:
     driver: bridge
-
