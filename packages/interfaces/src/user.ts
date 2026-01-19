@@ -1,19 +1,22 @@
 export interface User {
   id: number;
   email: string;
-  displayName: string;
-  avatarUrl: string;
+  nickname?: string;
+  avatarUrl?: string;
+  slackWebhookUrl?: string;
+  isProfileComplete: boolean;
   createdAt: Date;
 }
 
 export interface CreateUserDto {
   email: string;
-  displayName: string;
+  nickname?: string;
 }
 
 export interface PatchUserDto {
-  displayName?: string;
+  nickname?: string;
   avatarUrl?: string;
+  slackWebhookUrl?: string;
 }
 
 export interface TokenDto {

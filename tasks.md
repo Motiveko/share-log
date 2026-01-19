@@ -11,22 +11,21 @@
 > 의존성: 없음 (최초 단계)
 
 ### 1.1 프로젝트 설정
-- [ ] Monorepo 구조 확인 및 패키지 설정 검토
-- [ ] ESLint, Prettier, TypeScript 설정 확인
+- [x] Monorepo 구조 확인 및 패키지 설정 검토
+- [x] ESLint, Prettier, TypeScript 설정 확인
 - [ ] Docker Compose 로컬 환경 테스트
 
 ### 1.2 데이터베이스 설계
-- [ ] Entity 설계 및 구현 (`packages/entities`)
-  - [ ] User Entity
-  - [ ] Workspace Entity
-  - [ ] WorkspaceMember Entity (참여자, 권한 관리)
-  - [ ] Invitation Entity
-  - [ ] Log Entity
-  - [ ] LogCategory Entity
-  - [ ] LogMethod Entity
-  - [ ] Adjustment Entity
-  - [ ] AdjustmentResult Entity (정산 결과)
-  - [ ] NotificationSetting Entity
+- [x] Entity 설계 및 구현 (`packages/entities`)
+  - [x] User Entity (nickname, slackWebhookUrl, isProfileComplete 추가)
+  - [x] Workspace Entity
+  - [x] WorkspaceMember Entity (참여자, 권한 관리)
+  - [x] Invitation Entity
+  - [x] Log Entity
+  - [x] LogCategory Entity
+  - [x] LogMethod Entity
+  - [x] Adjustment Entity (정산 결과 포함)
+  - [x] NotificationSetting Entity
 - [ ] TypeORM Migration 설정
 - [ ] 초기 마이그레이션 파일 생성
 
@@ -36,20 +35,21 @@
 > 의존성: Phase 1.2 (User Entity)
 
 ### 2.1 Google OAuth 인증
-- [ ] Passport.js Google Strategy 설정
-- [ ] 세션 관리 (express-session + Redis)
-- [ ] 인증 미들웨어 구현
+- [x] Passport.js Google Strategy 설정
+- [x] 세션 관리 (express-session + Redis)
+- [x] 인증 미들웨어 구현
 
 ### 2.2 인증 API
-- [ ] POST /auth/google - OAuth 콜백 처리
-- [ ] POST /auth/logout - 로그아웃
-- [ ] GET /auth/me - 현재 사용자 정보
+- [x] GET /auth/google - Google OAuth 로그인 시작
+- [x] GET /auth/google/callback - OAuth 콜백 처리
+- [x] POST /auth/logout - 로그아웃
+- [x] GET /user (auth/me) - 현재 사용자 정보
 
 ### 2.3 프론트엔드 인증
-- [ ] 로그인 페이지 (/login) UI
-- [ ] Google 로그인 버튼 연동
-- [ ] 인증 상태 관리 (Zustand)
-- [ ] Protected Route 구현
+- [x] 로그인 페이지 (/login) UI
+- [x] Google 로그인 버튼 연동
+- [x] 인증 상태 관리 (Zustand)
+- [x] Protected Route 구현
 
 ---
 

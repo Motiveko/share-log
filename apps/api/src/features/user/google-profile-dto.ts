@@ -33,8 +33,10 @@ export class GoogleProfileDto {
   toEntity(): User {
     const user = new User();
     user.email = this.email;
-    user.displayName = this.displayName;
+    // Google 프로필의 displayName은 User의 nickname으로 사용하지 않음
+    // 닉네임은 /welcome 페이지에서 별도로 설정해야 함
     user.avatarUrl = this.avatarUrl;
+    user.isProfileComplete = false;
     return user;
   }
 }

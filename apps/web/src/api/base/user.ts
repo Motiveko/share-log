@@ -6,13 +6,10 @@ import type { DataAndMessageResponse } from "@web/api/types";
 const UserSchema: z.ZodType<User> = z.object({
   id: z.number(),
   email: z.string(),
-  displayName: z.string(),
-  avatarUrl: z.string(),
-  // TODO: coerce보다 transform이 더 좋을거같은데 현재는 타입이 안맞음. 해결 방법 찾아봐야함
-  // createdAt: z
-  //   .string()
-  //   .datetime({ offset: true }) // ISO 8601 형식 강제
-  //   .transform((str) => new Date(str)), // 문자열 검증 후 Date 객체로 변환
+  nickname: z.string().optional(),
+  avatarUrl: z.string().optional(),
+  slackWebhookUrl: z.string().optional(),
+  isProfileComplete: z.boolean(),
   createdAt: z.coerce.date(),
 });
 

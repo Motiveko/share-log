@@ -1,4 +1,3 @@
-import { CounterButton } from "@repo/ui";
 import GoogleLoginButton from "@web/features/auth/google-login-button";
 
 function LoginPage() {
@@ -9,8 +8,6 @@ function LoginPage() {
       </div>
       <div className="flex flex-col items-center justify-center">
         <GoogleLoginButton />
-
-        <CounterButton />
       </div>
     </div>
   );

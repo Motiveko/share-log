@@ -66,6 +66,7 @@ docker compose -f infra/docker-compose-local.yml up -d
 - Feature-based pages in `/features` and `/pages`
 - API client with axios + TanStack Query
 - State: Zustand with slice pattern for scaling
+- Style: tailwindCSS
 
 **Worker (`/apps/notification-worker`):**
 - BullMQ worker consuming jobs from Redis queue

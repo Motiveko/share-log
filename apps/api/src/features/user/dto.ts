@@ -12,13 +12,19 @@ export class UserResponseDto implements UserInterface {
   id: number;
 
   @Expose()
-  displayName: string;
+  nickname?: string;
 
   @Expose()
   email: string;
 
   @Expose()
-  avatarUrl: string;
+  avatarUrl?: string;
+
+  @Expose()
+  slackWebhookUrl?: string;
+
+  @Expose()
+  isProfileComplete: boolean;
 
   @Expose()
   createdAt: Date;
@@ -72,10 +78,13 @@ export class JwtPayloadDto {
   email: string;
 
   @Expose()
-  displayName: string;
+  nickname?: string;
 
   @Expose()
-  avatarUrl: string;
+  avatarUrl?: string;
+
+  @Expose()
+  isProfileComplete: boolean;
 
   @Expose()
   createdAt: Date;

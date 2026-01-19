@@ -4,6 +4,7 @@ import { useAuthStore } from "@web/features/auth/store";
 
 function ProtectedRoute() {
   const { user, status, init } = useAuthStore();
+  console.log('user', user)
 
   useEffect(() => {
     if (status === "idle") {

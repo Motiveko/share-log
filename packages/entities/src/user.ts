@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-  Index, // Index 추가
+  Index,
 } from "typeorm";
 import { AuthProvider } from "./auth-provider";
 
@@ -19,12 +19,22 @@ export class User {
   @Index()
   email?: string;
 
+  // 닉네임 (필수값, 최초 로그인 후 설정 필요)
   @Column({ nullable: true })
-  displayName?: string;
+  @Index()
+  nickname?: string;
 
   // 프로필 사진 URL
   @Column({ nullable: true })
   avatarUrl?: string;
+
+  // Slack 웹훅 URL (개인 알림용)
+  @Column({ nullable: true })
+  slackWebhookUrl?: string;
+
+  // 프로필 설정 완료 여부 (닉네임 설정 완료 시 true)
+  @Column({ default: false })
+  isProfileComplete: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -33,13 +43,21 @@ export class User {
   updatedAt: Date;
 
   @OneToMany(() => AuthProvider, (authProvider) => authProvider.user, {
-    eager: true, // User 엔티티를 조회할 때 연결된 AuthProvider 정보도 함께 로드 (선택적)
-    cascade: true, // User 저장 시 연결된 AuthProvider도 함께 저장/업데이트
+    eager: true,
+    cascade: true,
   })
   authProviders: AuthProvider[];
 
-  patch(dto: Partial<Pick<typeof this, "displayName" | "avatarUrl">>) {
+  patch(
+    dto: Partial<
+      Pick<typeof this, "nickname" | "avatarUrl" | "slackWebhookUrl">
+    >
+  ) {
     Object.assign(this, dto);
+    // 닉네임이 설정되면 프로필 완료로 표시
+    if (dto.nickname) {
+      this.isProfileComplete = true;
+    }
     return this;
   }
 }

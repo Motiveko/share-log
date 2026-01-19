@@ -7,12 +7,18 @@
     "lint": "eslint src/ --fix"
   },
   "exports": {
-    "./auth-provider": "./src/auth-provider.ts",
-    "./base": "./src/base.ts",
-    "./push-subscription": "./src/push-subscription.ts",
-    "./todo": "./src/todo.ts",
+    ".": "./src/index.ts",
     "./user": "./src/user.ts",
-    "./video": "./src/video.ts"
+    "./auth-provider": "./src/auth-provider.ts",
+    "./push-subscription": "./src/push-subscription.ts",
+    "./workspace": "./src/workspace.ts",
+    "./workspace-member": "./src/workspace-member.ts",
+    "./invitation": "./src/invitation.ts",
+    "./log": "./src/log.ts",
+    "./log-category": "./src/log-category.ts",
+    "./log-method": "./src/log-method.ts",
+    "./adjustment": "./src/adjustment.ts",
+    "./notification-setting": "./src/notification-setting.ts"
   },
   "dependencies": {
     "@types/jest": "^30.0.0",

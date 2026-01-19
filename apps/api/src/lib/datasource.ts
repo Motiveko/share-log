@@ -2,14 +2,40 @@ import { Config } from "@api/config/env";
 import { toNumber } from "lodash";
 import { singleton } from "tsyringe";
 import { DataSource as TypeOrmDataSource } from "typeorm";
+// User & Auth
 import { User } from "@repo/entities/user";
 import { AuthProvider } from "@repo/entities/auth-provider";
 import { PushSubscription } from "@repo/entities/push-subscription";
+// Workspace
+import { Workspace } from "@repo/entities/workspace";
+import { WorkspaceMember } from "@repo/entities/workspace-member";
+import { Invitation } from "@repo/entities/invitation";
+// Log
+import { Log } from "@repo/entities/log";
+import { LogCategory } from "@repo/entities/log-category";
+import { LogMethod } from "@repo/entities/log-method";
+// Adjustment
+import { Adjustment } from "@repo/entities/adjustment";
+// Settings
+import { NotificationSetting } from "@repo/entities/notification-setting";
 
 const entities = [
+  // User & Auth
   User,
   AuthProvider,
   PushSubscription,
+  // Workspace
+  Workspace,
+  WorkspaceMember,
+  Invitation,
+  // Log
+  Log,
+  LogCategory,
+  LogMethod,
+  // Adjustment
+  Adjustment,
+  // Settings
+  NotificationSetting,
 ];
 
 @singleton()
