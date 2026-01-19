@@ -1,9 +1,9 @@
 export interface User {
   id: number;
   email: string;
-  nickname?: string;
+  nickname?: string | null;
   avatarUrl?: string;
-  slackWebhookUrl?: string;
+  slackWebhookUrl?: string | null;
   isProfileComplete: boolean;
   createdAt: Date;
 }
@@ -26,4 +26,11 @@ export interface TokenDto {
 export interface JwtResponse {
   accessToken: string;
   refreshToken?: string;
+}
+
+export interface SearchUser {
+  id: number;
+  email: string;
+  nickname?: string;
+  avatarUrl?: string;
 }

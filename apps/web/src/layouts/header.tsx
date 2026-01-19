@@ -7,7 +7,7 @@ function Divider() {
 }
 
 function Header() {
-  const logout = useAuthStore((state) => state.logout);
+  const { logout, user } = useAuthStore();
   return (
     <header className="flex justify-between py-2 px-5">
       <nav className="p-2">
@@ -16,7 +16,10 @@ function Header() {
         <Link to="/todo">Todo</Link> <Divider />
         <Link to="/videos">Videos</Link>
       </nav>
-      <div>
+      <div className="flex items-center gap-4">
+        <Link to="/profile" className="text-sm hover:underline">
+          {user?.nickname || user?.email || "프로필"}
+        </Link>
         <Button onClick={logout}>Logout</Button>
       </div>
     </header>

@@ -1,5 +1,5 @@
 import { User } from "@repo/entities/user";
-import { Repository } from "typeorm";
+import { Repository, ILike } from "typeorm";
 import { singleton } from "tsyringe";
 import { DataSource } from "@api/lib/datasource";
 
@@ -11,5 +11,15 @@ export class UserRepository extends Repository<User> {
 
   findById(id: number) {
     return this.findOne({ where: { id } });
+  }
+
+  searchByNicknameOrEmail(query: string, limit: number = 10) {
+    return this.find({
+      where: [
+        { nickname: ILike(`%${query}%`) },
+        { email: ILike(`%${query}%`) },
+      ],
+      take: limit,
+    });
   }
 }

@@ -55,6 +55,9 @@ export const useAuthStore = create<AuthStore>()(
         get().updateStatus("loading");
         try {
           await API.user.logout();
+          set((state) => {
+            state.user = null;
+          });
           get().updateStatus("success");
         } catch (error) {
           logger.error(error);

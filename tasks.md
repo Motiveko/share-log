@@ -57,13 +57,13 @@
 > 의존성: Phase 2 (인증)
 
 ### 3.1 사용자 API
-- [ ] GET /users/search - 닉네임/이메일 검색
-- [ ] PATCH /users/me - 프로필 수정
-- [ ] DELETE /users/me - 회원 탈퇴
+- [x] GET /users/search - 닉네임/이메일 검색
+- [x] PATCH /users/me - 프로필 수정
+- [x] DELETE /users/me - 회원 탈퇴
 
 ### 3.2 프론트엔드 페이지
-- [ ] 웰컴 페이지 (/welcome) - 닉네임 설정 폼
-- [ ] 프로필 페이지 (/profile) - 프로필 수정 폼
+- [x] 웰컴 페이지 (/welcome) - 닉네임 설정 폼
+- [x] 프로필 페이지 (/profile) - 프로필 수정 폼
 
 ---
 

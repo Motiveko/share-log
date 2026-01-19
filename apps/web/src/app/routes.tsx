@@ -4,6 +4,8 @@ import BaseLayout from "@web/layouts/base";
 import HomePage from "@web/pages/home";
 import NotFoundPage from "@web/pages/not-found";
 import LoginPage from "@web/pages/login";
+import WelcomePage from "@web/pages/welcome";
+import ProfilePage from "@web/pages/profile";
 import { postRenderSetup } from "@web/init";
 import ProtectedRoute from "@web/routes/protected-route";
 import Header from "@web/layouts/header";
@@ -28,6 +30,8 @@ function AppRoutes() {
       >
         <Route element={<ProtectedRoute />}>
           <Route element={<HomePage />} index />
+          <Route element={<WelcomePage />} path="welcome" />
+          <Route element={<ProfilePage />} path="profile" />
           <Route element={<NotFoundPage />} path="*" />
         </Route>
       </Route>

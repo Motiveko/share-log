@@ -1,8 +1,9 @@
 import { singleton } from "tsyringe";
 import { User } from "@repo/entities/user";
 import { GoogleProfileDto } from "@api/features/user/google-profile-dto";
-import { LoginDto } from "@api/features/user/dto";
+import { LoginDto, PatchUserRequestDto } from "@api/features/user/dto";
 import { UserRepository } from "@api/features/user/repository";
+import type { PatchUserDto } from "@repo/interfaces";
 
 @singleton()
 export class UserService {
@@ -49,5 +50,14 @@ export class UserService {
 
   async deleteById(id: number) {
     return this.userRepository.delete(id);
+  }
+
+  async update(user: User, dto: PatchUserDto) {
+    user.patch(dto);
+    return this.userRepository.save(user);
+  }
+
+  async search(query: string) {
+    return this.userRepository.searchByNicknameOrEmail(query);
   }
 }

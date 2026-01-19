@@ -35,8 +35,10 @@ export type RequestWithParams<T extends Record<string, any>> = TypedRequest<
 export interface AuthenticatedTypedRequest<
   T = unknown,
   V extends Record<string, any> = any,
+  Q extends Record<string, any> = any,
 > extends TypedRequest<T, V> {
   user: UserDto;
+  query: Q;
 }
 
 export interface AuthenticatedRequestWithParams<T extends Record<string, any>>

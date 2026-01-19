@@ -1,9 +1,10 @@
 import { Expose, instanceToPlain, plainToInstance } from "class-transformer";
-import { IsString } from "class-validator";
+import { IsString, IsOptional, MinLength, IsUrl } from "class-validator";
 import {
   User as UserInterface,
   TokenDto as TokenInterface,
   JwtResponse,
+  PatchUserDto as PatchUserDtoInterface,
 } from "@repo/interfaces";
 import { User } from "@repo/entities/user";
 
@@ -97,5 +98,52 @@ export class JwtPayloadDto {
 
   toJSON(): Record<string, any> {
     return instanceToPlain(this);
+  }
+}
+
+export class PatchUserRequestDto implements PatchUserDtoInterface {
+  @IsOptional()
+  @IsString()
+  @MinLength(2, { message: "닉네임은 최소 2자 이상이어야 합니다." })
+  nickname?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsUrl({}, { message: "유효한 URL 형식이어야 합니다." })
+  avatarUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsUrl({}, { message: "유효한 Slack 웹훅 URL 형식이어야 합니다." })
+  slackWebhookUrl?: string;
+}
+
+export class SearchUserQueryDto {
+  @IsString()
+  @MinLength(1, { message: "검색어를 입력해주세요." })
+  q: string;
+}
+
+export class SearchUserResponseDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  nickname?: string;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  avatarUrl?: string;
+
+  static fromEntity(entity: User) {
+    return plainToInstance(SearchUserResponseDto, entity, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  static fromEntities(entities: User[]) {
+    return entities.map((entity) => SearchUserResponseDto.fromEntity(entity));
   }
 }

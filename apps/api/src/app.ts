@@ -171,9 +171,22 @@ class App {
 
   private mountPrivateRoutes() {
     const privateRoute = Router() as PrivateRoute;
+    // User routes
     privateRoute.get(
       "/v1/user",
       this.userController.get.bind(this.userController)
+    );
+    privateRoute.patch(
+      "/v1/user",
+      this.userController.patch.bind(this.userController)
+    );
+    privateRoute.delete(
+      "/v1/user",
+      this.userController.delete.bind(this.userController)
+    );
+    privateRoute.get(
+      "/v1/users/search",
+      this.userController.search.bind(this.userController)
     );
 
     privateRoute.post(
