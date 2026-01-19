@@ -3,6 +3,15 @@ import { useNavigate } from "react-router";
 import { useAuthStore } from "@web/features/auth/store";
 import { API } from "@web/api";
 import { toast } from "react-toastify";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@web/components/ui/card";
+import { FormField } from "@web/components/ui/form-field";
+import { Button } from "@web/components/ui/button";
 
 function WelcomePage() {
   const navigate = useNavigate();
@@ -34,42 +43,35 @@ function WelcomePage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center gap-6 py-12 px-4">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2">환영합니다!</h1>
-        <p className="text-gray-600">
+    <Card className="w-full max-w-md">
+      <CardHeader className="text-center">
+        <CardTitle>환영합니다!</CardTitle>
+        <CardDescription>
           서비스를 이용하기 전에 닉네임을 설정해주세요.
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <label htmlFor="nickname" className="text-sm font-medium">
-            닉네임
-          </label>
-          <input
-            id="nickname"
-            type="text"
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <FormField
+            label="닉네임"
+            required
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder="닉네임을 입력하세요"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             minLength={2}
-            required
             disabled={isSubmitting}
+            error={error}
           />
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-        </div>
-
-        <button
-          type="submit"
-          disabled={isSubmitting || nickname.length < 2}
-          className="w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-        >
-          {isSubmitting ? "설정 중..." : "시작하기"}
-        </button>
-      </form>
-    </div>
+          <Button
+            type="submit"
+            disabled={isSubmitting || nickname.length < 2}
+            className="w-full"
+          >
+            {isSubmitting ? "설정 중..." : "시작하기"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 
