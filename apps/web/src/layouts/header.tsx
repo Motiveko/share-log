@@ -12,9 +12,6 @@ function Header() {
     <header className="flex justify-between py-2 px-5">
       <nav className="p-2">
         <Link to="/">Home</Link> <Divider />
-        <Link to="/about">About</Link> <Divider />
-        <Link to="/todo">Todo</Link> <Divider />
-        <Link to="/videos">Videos</Link>
       </nav>
       <div>
         <Button onClick={logout}>Logout</Button>

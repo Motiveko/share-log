@@ -1,8 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
 import { useWebPush } from "@web/features/web-push/use-web-push";
-import { webPushService } from "./push-service";
-
-type PushStatus = "loading" | "unsupported" | "ready" | "subscribed" | "error";
 
 export function WebPushTestContainer() {
   const {
