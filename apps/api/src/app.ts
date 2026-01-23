@@ -25,6 +25,12 @@ import { TestController } from "@api/features/test/controller";
 import { notFoundMiddleware } from "@api/middlewares/not-found";
 import { StorageController } from "@api/features/storage/controller";
 import { PushController } from "@api/features/push/controller";
+import { WorkspaceController } from "@api/features/workspace/workspace-controller";
+import { MemberController } from "@api/features/workspace/member-controller";
+import {
+  requireWorkspaceMember,
+  requireWorkspaceMaster,
+} from "@api/features/workspace/guards";
 import { DataSource } from "@api/lib/datasource";
 import { singleton } from "tsyringe";
 import { RedisClient } from "@api/lib/redis";
@@ -42,6 +48,8 @@ class App {
   private testController!: TestController;
   private storageController!: StorageController;
   private pushController!: PushController;
+  private workspaceController!: WorkspaceController;
+  private memberController!: MemberController;
 
   constructor(
     private redisClient: RedisClient,
@@ -69,6 +77,8 @@ class App {
     this.testController = container.resolve(TestController);
     this.storageController = container.resolve(StorageController);
     this.pushController = container.resolve(PushController);
+    this.workspaceController = container.resolve(WorkspaceController);
+    this.memberController = container.resolve(MemberController);
   }
 
   mountRouter() {
@@ -228,6 +238,52 @@ class App {
     privateRoute.post(
       "/v1/push/test",
       this.pushController.sendTest.bind(this.pushController)
+    );
+
+    // Workspace routes
+    privateRoute.post(
+      "/v1/workspaces",
+      this.workspaceController.create.bind(this.workspaceController)
+    );
+    privateRoute.get(
+      "/v1/workspaces",
+      this.workspaceController.list.bind(this.workspaceController)
+    );
+    privateRoute.get(
+      "/v1/workspaces/last-visit",
+      this.workspaceController.getLastVisit.bind(this.workspaceController)
+    );
+    privateRoute.get(
+      "/v1/workspaces/:id",
+      requireWorkspaceMember,
+      this.workspaceController.get.bind(this.workspaceController)
+    );
+    privateRoute.patch(
+      "/v1/workspaces/:id",
+      requireWorkspaceMaster,
+      this.workspaceController.update.bind(this.workspaceController)
+    );
+    privateRoute.delete(
+      "/v1/workspaces/:id",
+      requireWorkspaceMaster,
+      this.workspaceController.delete.bind(this.workspaceController)
+    );
+
+    // Workspace member routes
+    privateRoute.get(
+      "/v1/workspaces/:id/members",
+      requireWorkspaceMember,
+      this.memberController.list.bind(this.memberController)
+    );
+    privateRoute.patch(
+      "/v1/workspaces/:id/members/:userId",
+      requireWorkspaceMaster,
+      this.memberController.updateRole.bind(this.memberController)
+    );
+    privateRoute.delete(
+      "/v1/workspaces/:id/members/:userId",
+      requireWorkspaceMaster,
+      this.memberController.expel.bind(this.memberController)
     );
 
     return privateRoute;

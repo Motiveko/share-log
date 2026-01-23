@@ -1,13 +1,17 @@
 import { Route, Routes, useNavigate } from "react-router";
 import { useEffect } from "react";
 import BaseLayout from "@web/layouts/base";
-import HomePage from "@web/pages/home";
+import WorkspaceLayout from "@web/layouts/workspace-layout";
 import NotFoundPage from "@web/pages/not-found";
 import LoginPage from "@web/pages/login";
 import WelcomePage from "@web/pages/welcome";
 import ProfilePage from "@web/pages/profile";
+import WorkspaceEmptyPage from "@web/pages/workspace-empty";
+import WorkspaceNewPage from "@web/pages/workspace-new";
+import WorkspaceDashboardPage from "@web/pages/workspace-dashboard";
 import { postRenderSetup } from "@web/init";
 import ProtectedRoute from "@web/routes/protected-route";
+import WorkspaceRoute from "@web/routes/workspace-route";
 import Header from "@web/layouts/header";
 import Footer from "@web/layouts/footer";
 
@@ -21,17 +25,66 @@ function AppRoutes() {
 
   return (
     <Routes>
+      {/* Login (no auth required) */}
       <Route element={<BaseLayout footer={<Footer />} />} path="/login">
         <Route element={<LoginPage />} index />
       </Route>
+
+      {/* Welcome page (auth required but profile incomplete) */}
       <Route
         element={<BaseLayout footer={<Footer />} header={<Header />} />}
+        path="/welcome"
+      >
+        <Route element={<ProtectedRoute />}>
+          <Route element={<WelcomePage />} index />
+        </Route>
+      </Route>
+
+      {/* Profile page (auth required) */}
+      <Route
+        element={<BaseLayout footer={<Footer />} header={<Header />} />}
+        path="/profile"
+      >
+        <Route element={<ProtectedRoute />}>
+          <Route element={<ProfilePage />} index />
+        </Route>
+      </Route>
+
+      {/* Workspace empty page (auth required, no LNB) */}
+      <Route
+        element={<BaseLayout footer={<Footer />} header={<Header />} />}
+        path="/workspace/empty"
+      >
+        <Route element={<ProtectedRoute />}>
+          <Route element={<WorkspaceEmptyPage />} index />
+        </Route>
+      </Route>
+
+      {/* Workspace new page (auth required, no LNB) */}
+      <Route
+        element={<BaseLayout footer={<Footer />} header={<Header />} />}
+        path="/workspace/new"
+      >
+        <Route element={<ProtectedRoute />}>
+          <Route element={<WorkspaceNewPage />} index />
+        </Route>
+      </Route>
+
+      {/* Main workspace routes with LNB */}
+      <Route
+        element={<WorkspaceLayout footer={<Footer />} header={<Header />} />}
         path="/"
       >
         <Route element={<ProtectedRoute />}>
-          <Route element={<HomePage />} index />
-          <Route element={<WelcomePage />} path="welcome" />
-          <Route element={<ProfilePage />} path="profile" />
+          <Route element={<WorkspaceRoute />}>
+            {/* Root path - redirects based on workspace status */}
+            <Route index element={null} />
+            {/* Workspace dashboard */}
+            <Route
+              path="workspace/:workspaceId"
+              element={<WorkspaceDashboardPage />}
+            />
+          </Route>
           <Route element={<NotFoundPage />} path="*" />
         </Route>
       </Route>

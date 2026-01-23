@@ -1,0 +1,66 @@
+import { Link, useParams } from "react-router";
+import { useEffect } from "react";
+import { useWorkspaceStore } from "@web/features/workspace/store";
+import { cn } from "@web/lib/utils";
+import { Button } from "@web/components/ui/button";
+
+function Lnb() {
+  const { workspaceId } = useParams<{ workspaceId: string }>();
+  const { workspaces, fetchWorkspaces, status } = useWorkspaceStore();
+
+  useEffect(() => {
+    if (status === "idle") {
+      void fetchWorkspaces();
+    }
+  }, [status, fetchWorkspaces]);
+
+  const currentWorkspaceId = workspaceId ? parseInt(workspaceId, 10) : null;
+
+  return (
+    <aside className="w-64 border-r bg-muted/30 flex flex-col shrink-0">
+      <div className="p-4 border-b">
+        <h2 className="font-semibold text-lg">워크스페이스</h2>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto p-2">
+        {status === "loading" && (
+          <div className="p-4 text-center text-muted-foreground">로딩 중...</div>
+        )}
+
+        {status === "success" && workspaces.length === 0 && (
+          <div className="p-4 text-center text-muted-foreground text-sm">
+            워크스페이스가 없습니다
+          </div>
+        )}
+
+        <ul className="space-y-1">
+          {workspaces.map((ws) => (
+            <li key={ws.id}>
+              <Link
+                to={`/workspace/${ws.id}`}
+                className={cn(
+                  "block px-3 py-2 rounded-md text-sm transition-colors",
+                  "hover:bg-accent hover:text-accent-foreground",
+                  currentWorkspaceId === ws.id && "bg-accent text-accent-foreground"
+                )}
+              >
+                <span className="truncate block">{ws.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {ws.memberCount}명
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div className="p-4 border-t">
+        <Button asChild variant="outline" className="w-full">
+          <Link to="/workspace/new">새 워크스페이스</Link>
+        </Button>
+      </div>
+    </aside>
+  );
+}
+
+export default Lnb;

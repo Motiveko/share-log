@@ -2,8 +2,8 @@ import { Config } from "@web/config/env";
 
 function Footer() {
   return (
-    <footer className="flex justify-center items-center p-2">
-      <p>© 2025 My {Config.SERVICE_NAME}</p>
+    <footer className="h-10 flex justify-center items-center border-t bg-background text-sm text-muted-foreground shrink-0">
+      <p>© 2025 {Config.SERVICE_NAME}</p>
     </footer>
   );
 }

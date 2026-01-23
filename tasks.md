@@ -71,25 +71,25 @@
 > 의존성: Phase 3 (사용자)
 
 ### 4.1 워크스페이스 API
-- [ ] POST /workspaces - 생성
-- [ ] GET /workspaces - 내 워크스페이스 목록
-- [ ] GET /workspaces/:id - 상세 조회
-- [ ] PATCH /workspaces/:id - 수정
-- [ ] DELETE /workspaces/:id - 삭제 (Master만)
+- [x] POST /workspaces - 생성
+- [x] GET /workspaces - 내 워크스페이스 목록
+- [x] GET /workspaces/:id - 상세 조회
+- [x] PATCH /workspaces/:id - 수정
+- [x] DELETE /workspaces/:id - 삭제 (Master만)
 
 ### 4.2 멤버 관리 API
-- [ ] GET /workspaces/:id/members - 멤버 목록
-- [ ] PATCH /workspaces/:id/members/:userId - 권한 변경 (Master만)
-- [ ] DELETE /workspaces/:id/members/:userId - 추방 (Master만)
+- [x] GET /workspaces/:id/members - 멤버 목록
+- [x] PATCH /workspaces/:id/members/:userId - 권한 변경 (Master만)
+- [x] DELETE /workspaces/:id/members/:userId - 추방 (Master만)
 
 ### 4.3 마지막 방문 워크스페이스
-- [ ] Redis에 마지막 방문 워크스페이스 저장
-- [ ] 워크스페이스 접근 시 자동 갱신
+- [x] Redis에 마지막 방문 워크스페이스 저장
+- [x] 워크스페이스 접근 시 자동 갱신
 
 ### 4.4 프론트엔드 페이지
-- [ ] 빈 워크스페이스 페이지 (/workspace/empty)
-- [ ] 워크스페이스 생성 페이지 (/workspace/new)
-- [ ] LNB 컴포넌트 (워크스페이스 목록, 정산 목록)
+- [x] 빈 워크스페이스 페이지 (/workspace/empty)
+- [x] 워크스페이스 생성 페이지 (/workspace/new)
+- [x] LNB 컴포넌트 (워크스페이스 목록, 정산 목록)
 
 ---
 
