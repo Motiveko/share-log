@@ -120,6 +120,14 @@ export class WorkspaceService {
   }
 
   /**
+   * 워크스페이스 존재 여부 확인
+   */
+  async exists(workspaceId: number): Promise<boolean> {
+    const workspace = await this.workspaceRepository.findById(workspaceId);
+    return workspace !== null;
+  }
+
+  /**
    * 마지막 방문 워크스페이스 조회
    */
   async getLastVisitWorkspaceId(userId: number): Promise<number | null> {

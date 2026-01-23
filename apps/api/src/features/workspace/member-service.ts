@@ -1,5 +1,9 @@
 import { singleton } from "tsyringe";
-import { MemberRole, MemberStatus } from "@repo/entities/workspace-member";
+import {
+  WorkspaceMember,
+  MemberRole,
+  MemberStatus,
+} from "@repo/entities/workspace-member";
 import { MemberRepository } from "@api/features/workspace/member-repository";
 import { NotFoundError } from "@api/errors/not-found";
 import { ForbiddenError } from "@api/errors/forbidden";
@@ -13,6 +17,48 @@ export class MemberService {
    */
   async findMembersByWorkspace(workspaceId: number) {
     return this.memberRepository.findAcceptedMembersWithUser(workspaceId);
+  }
+
+  /**
+   * 워크스페이스와 사용자로 ACCEPTED 멤버 조회
+   */
+  async findAcceptedByWorkspaceAndUser(
+    workspaceId: number,
+    userId: number
+  ): Promise<WorkspaceMember | null> {
+    return this.memberRepository.findAcceptedByWorkspaceAndUser(
+      workspaceId,
+      userId
+    );
+  }
+
+  /**
+   * 해당 사용자가 워크스페이스의 ACCEPTED 멤버인지 확인
+   */
+  async isAcceptedMember(workspaceId: number, userId: number): Promise<boolean> {
+    const member = await this.memberRepository.findAcceptedByWorkspaceAndUser(
+      workspaceId,
+      userId
+    );
+    return member !== null;
+  }
+
+  /**
+   * 새 멤버 생성
+   */
+  async createMember(
+    workspaceId: number,
+    userId: number,
+    role: MemberRole,
+    status: MemberStatus
+  ): Promise<WorkspaceMember> {
+    const member = new WorkspaceMember();
+    member.workspaceId = workspaceId;
+    member.userId = userId;
+    member.role = role;
+    member.status = status;
+
+    return this.memberRepository.save(member);
   }
 
   /**

@@ -1,14 +1,10 @@
-import { singleton } from "tsyringe";
+import { singleton, inject, delay } from "tsyringe";
 import { Invitation, InvitationStatus } from "@repo/entities/invitation";
-import {
-  WorkspaceMember,
-  MemberRole,
-  MemberStatus,
-} from "@repo/entities/workspace-member";
+import { MemberRole, MemberStatus } from "@repo/entities/workspace-member";
 import { InvitationRepository } from "@api/features/invitation/invitation-repository";
-import { MemberRepository } from "@api/features/workspace/member-repository";
-import { WorkspaceRepository } from "@api/features/workspace/workspace-repository";
-import { UserRepository } from "@api/features/user/repository";
+import { UserService } from "@api/features/user/service";
+import { MemberService } from "@api/features/workspace/member-service";
+import { WorkspaceService } from "@api/features/workspace/workspace-service";
 import { NotFoundError } from "@api/errors/not-found";
 import { ForbiddenError } from "@api/errors/forbidden";
 import { BadRequestError } from "@api/errors/bad-request";
@@ -17,9 +13,10 @@ import { BadRequestError } from "@api/errors/bad-request";
 export class InvitationService {
   constructor(
     private readonly invitationRepository: InvitationRepository,
-    private readonly memberRepository: MemberRepository,
-    private readonly workspaceRepository: WorkspaceRepository,
-    private readonly userRepository: UserRepository
+    private readonly userService: UserService,
+    private readonly memberService: MemberService,
+    @inject(delay(() => WorkspaceService))
+    private readonly workspaceService: WorkspaceService
   ) {}
 
   /**
@@ -31,24 +28,21 @@ export class InvitationService {
     inviteeEmail: string
   ): Promise<Invitation> {
     // 워크스페이스 존재 확인
-    const workspace = await this.workspaceRepository.findById(workspaceId);
-    if (!workspace) {
+    const workspaceExists = await this.workspaceService.exists(workspaceId);
+    if (!workspaceExists) {
       throw new NotFoundError("워크스페이스를 찾을 수 없습니다.");
     }
 
     // 이메일로 사용자 조회
-    const invitee = await this.userRepository.findOne({
-      where: { email: inviteeEmail },
-    });
+    const invitee = await this.userService.findByEmail(inviteeEmail);
 
     // 이미 ACCEPTED 멤버인지 확인
     if (invitee) {
-      const existingMember =
-        await this.memberRepository.findAcceptedByWorkspaceAndUser(
-          workspaceId,
-          invitee.id
-        );
-      if (existingMember) {
+      const isAlreadyMember = await this.memberService.isAcceptedMember(
+        workspaceId,
+        invitee.id
+      );
+      if (isAlreadyMember) {
         throw new BadRequestError("이미 워크스페이스 멤버입니다.");
       }
     }
@@ -64,7 +58,7 @@ export class InvitationService {
     }
 
     // 자기 자신 초대 방지
-    const inviter = await this.userRepository.findById(inviterId);
+    const inviter = await this.userService.getById(inviterId);
     if (inviter && inviter.email === inviteeEmail) {
       throw new BadRequestError("자기 자신을 초대할 수 없습니다.");
     }
@@ -124,7 +118,7 @@ export class InvitationService {
     }
 
     // 본인의 초대인지 확인
-    const user = await this.userRepository.findById(userId);
+    const user = await this.userService.getById(userId);
     if (!user) {
       throw new NotFoundError("사용자를 찾을 수 없습니다.");
     }
@@ -142,23 +136,21 @@ export class InvitationService {
     }
 
     // 이미 멤버인지 확인 (중복 가입 방지)
-    const existingMember =
-      await this.memberRepository.findAcceptedByWorkspaceAndUser(
-        invitation.workspaceId,
-        userId
-      );
-    if (existingMember) {
+    const isAlreadyMember = await this.memberService.isAcceptedMember(
+      invitation.workspaceId,
+      userId
+    );
+    if (isAlreadyMember) {
       throw new BadRequestError("이미 워크스페이스 멤버입니다.");
     }
 
     // WorkspaceMember 생성
-    const member = new WorkspaceMember();
-    member.workspaceId = invitation.workspaceId;
-    member.userId = userId;
-    member.role = MemberRole.MEMBER;
-    member.status = MemberStatus.ACCEPTED;
-
-    await this.memberRepository.save(member);
+    await this.memberService.createMember(
+      invitation.workspaceId,
+      userId,
+      MemberRole.MEMBER,
+      MemberStatus.ACCEPTED
+    );
 
     // 초대 상태 변경
     invitation.status = InvitationStatus.ACCEPTED;
@@ -178,7 +170,7 @@ export class InvitationService {
     }
 
     // 본인의 초대인지 확인
-    const user = await this.userRepository.findById(userId);
+    const user = await this.userService.getById(userId);
     if (!user) {
       throw new NotFoundError("사용자를 찾을 수 없습니다.");
     }
