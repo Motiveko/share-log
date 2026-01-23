@@ -60,15 +60,15 @@ export interface HttpClientConfig extends CreateAxiosDefaults {
 
 type HttpMethod = (<T extends ZodTypeAny>(
   url: string,
-  config: HttpRequestConfigWithSchemaAndHeaders<T>
+  config: HttpRequestConfigWithSchemaAndHeaders<T>,
 ) => Promise<HttpResponse<z.infer<T>>>) &
   (<T extends ZodTypeAny>(
     url: string,
-    config: HttpRequestConfigWithSchema<T>
+    config: HttpRequestConfigWithSchema<T>,
   ) => Promise<z.infer<T>>) &
   ((
     url: string,
-    config: HttpRequestConfigWithHeaders
+    config: HttpRequestConfigWithHeaders,
   ) => Promise<HttpResponse<void>>) &
   ((url: string, config?: HttpRequestConfig) => Promise<void>);
 
@@ -104,15 +104,15 @@ export interface HttpClient {
 function createRequest(axiosInstance: AxiosInstance) {
   // withHeaders + schema
   async function request<T extends ZodTypeAny>(
-    config: _RequestConfigWithSchemaAndHeaders<T>
+    config: _RequestConfigWithSchemaAndHeaders<T>,
   ): Promise<HttpResponse<z.infer<T>>>;
   // schema only
   async function request<T extends ZodTypeAny>(
-    config: _RequestConfigWithSchema<T>
+    config: _RequestConfigWithSchema<T>,
   ): Promise<z.infer<T>>;
   // withHeaders only
   async function request(
-    config: _RequestConfigWithHeaders
+    config: _RequestConfigWithHeaders,
   ): Promise<HttpResponse<void>>;
   // no schema, no withHeaders
   async function request(config: _RequestConfig): Promise<void>;
@@ -123,7 +123,7 @@ function createRequest(axiosInstance: AxiosInstance) {
       | _RequestConfigWithSchemaAndHeaders<T>
       | _RequestConfigWithSchema<T>
       | _RequestConfigWithHeaders
-      | _RequestConfig
+      | _RequestConfig,
   ): Promise<
     HttpResponse<z.infer<T>> | z.infer<T> | HttpResponse<void> | void
   > {
@@ -147,7 +147,7 @@ function createRequest(axiosInstance: AxiosInstance) {
 
         throw new ValidationError(
           "Response validation failed",
-          validationResult.error
+          validationResult.error,
         );
       } else {
         if (withHeaders) {
@@ -172,19 +172,19 @@ function createRequest(axiosInstance: AxiosInstance) {
             `Request failed with status code ${status}`,
             status,
             responseData,
-            axiosError // 원본 Axios 에러 포함
+            axiosError, // 원본 Axios 에러 포함
           );
         } else if (axiosError.request) {
           // 요청은 이루어졌으나 응답을 받지 못한 경우 (네트워크 오류 등)
           throw new NetworkError(
             "No response received from server. Check network connection.",
-            axiosError
+            axiosError,
           );
         } else {
           // 요청 설정 중 에러 발생 등 그 외 Axios 관련 에러
           throw new NetworkError(
             `Failed to set up request: ${originalMessage}`,
-            axiosError
+            axiosError,
           );
         }
       } else {
@@ -193,7 +193,7 @@ function createRequest(axiosInstance: AxiosInstance) {
           "An unexpected error occurred",
           undefined, // 상태 코드 없음
           undefined,
-          error instanceof Error ? error : undefined // 원본 에러가 Error 인스턴스면 포함
+          error instanceof Error ? error : undefined, // 원본 에러가 Error 인스턴스면 포함
         );
       }
     }
@@ -221,7 +221,7 @@ export function createHttpClient(config: HttpClientConfig = {}): HttpClient {
       }
       console.error("Request Error Interceptor:", error);
       return Promise.reject(error);
-    }
+    },
   );
 
   // 응답 인터셉터
@@ -229,11 +229,11 @@ export function createHttpClient(config: HttpClientConfig = {}): HttpClient {
     (response) => response,
     (error: AxiosLibError) => {
       if (onResponseError) {
-        return onResponseError(error);
+        onResponseError(error);
       }
       console.error(error);
       return Promise.reject(error);
-    }
+    },
   );
 
   const request = createRequest(axiosInstance);
@@ -262,7 +262,13 @@ export function createHttpClient(config: HttpClientConfig = {}): HttpClient {
     }) as HttpMethod,
 
     addErrorResponseInterceptor: (onRejected: (error: any) => any): number => {
-      return responseInterceptorManager.use((response) => response, onRejected);
+      return responseInterceptorManager.use(
+        (response) => response,
+        (error) => {
+          onRejected(error);
+          return Promise.reject(error);
+        },
+      );
     },
 
     removeErrorResponseInterceptor: (interceptorId: number): void => {
