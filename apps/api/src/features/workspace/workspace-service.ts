@@ -4,19 +4,22 @@ import { WorkspaceMember, MemberRole, MemberStatus } from "@repo/entities/worksp
 import { WorkspaceRepository } from "@api/features/workspace/workspace-repository";
 import { MemberRepository } from "@api/features/workspace/member-repository";
 import { LastVisitService } from "@api/features/workspace/last-visit-service";
+import { InvitationService } from "@api/features/invitation/invitation-service";
 import { CreateWorkspaceRequestDto, UpdateWorkspaceRequestDto } from "@api/features/workspace/dto";
 import { NotFoundError } from "@api/errors/not-found";
+import logger from "@api/lib/logger";
 
 @singleton()
 export class WorkspaceService {
   constructor(
     private readonly workspaceRepository: WorkspaceRepository,
     private readonly memberRepository: MemberRepository,
-    private readonly lastVisitService: LastVisitService
+    private readonly lastVisitService: LastVisitService,
+    private readonly invitationService: InvitationService
   ) {}
 
   /**
-   * 워크스페이스 생성 + 생성자를 MASTER 멤버로 추가
+   * 워크스페이스 생성 + 생성자를 MASTER 멤버로 추가 + 초대 생성
    */
   async create(userId: number, dto: CreateWorkspaceRequestDto): Promise<Workspace> {
     // 워크스페이스 생성
@@ -40,7 +43,30 @@ export class WorkspaceService {
     // 마지막 방문 워크스페이스 갱신
     await this.lastVisitService.set(userId, savedWorkspace.id);
 
+    // 초대 생성 (inviteeEmails가 있는 경우)
+    if (dto.inviteeEmails && dto.inviteeEmails.length > 0) {
+      await this.createInvitations(savedWorkspace.id, userId, dto.inviteeEmails);
+    }
+
     return savedWorkspace;
+  }
+
+  /**
+   * 워크스페이스에 여러 사용자 초대 생성 (실패해도 워크스페이스 생성은 유지)
+   */
+  private async createInvitations(
+    workspaceId: number,
+    inviterId: number,
+    inviteeEmails: string[]
+  ): Promise<void> {
+    for (const email of inviteeEmails) {
+      try {
+        await this.invitationService.create(workspaceId, inviterId, email);
+      } catch (error) {
+        // 개별 초대 실패는 로그만 남기고 계속 진행
+        logger.warn({ message: `워크스페이스 생성 시 초대 실패 - email: ${email}`, error });
+      }
+    }
   }
 
   /**

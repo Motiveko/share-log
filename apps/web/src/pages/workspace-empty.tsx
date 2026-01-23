@@ -1,10 +1,11 @@
 import { Link } from "react-router";
 import { Button } from "@web/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@web/components/ui/card";
+import { InvitationList } from "@web/features/invitation/components/invitation-list";
 
 function WorkspaceEmptyPage() {
   return (
-    <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>워크스페이스가 없습니다</CardTitle>
@@ -18,6 +19,10 @@ function WorkspaceEmptyPage() {
           </Button>
         </CardContent>
       </Card>
+
+      <div className="w-full max-w-md">
+        <InvitationList />
+      </div>
     </div>
   );
 }

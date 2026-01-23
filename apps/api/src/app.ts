@@ -27,6 +27,7 @@ import { StorageController } from "@api/features/storage/controller";
 import { PushController } from "@api/features/push/controller";
 import { WorkspaceController } from "@api/features/workspace/workspace-controller";
 import { MemberController } from "@api/features/workspace/member-controller";
+import { InvitationController } from "@api/features/invitation/invitation-controller";
 import {
   requireWorkspaceMember,
   requireWorkspaceMaster,
@@ -50,6 +51,7 @@ class App {
   private pushController!: PushController;
   private workspaceController!: WorkspaceController;
   private memberController!: MemberController;
+  private invitationController!: InvitationController;
 
   constructor(
     private redisClient: RedisClient,
@@ -79,6 +81,7 @@ class App {
     this.pushController = container.resolve(PushController);
     this.workspaceController = container.resolve(WorkspaceController);
     this.memberController = container.resolve(MemberController);
+    this.invitationController = container.resolve(InvitationController);
   }
 
   mountRouter() {
@@ -284,6 +287,21 @@ class App {
       "/v1/workspaces/:id/members/:userId",
       requireWorkspaceMaster,
       this.memberController.expel.bind(this.memberController)
+    );
+
+    // Invitation routes
+    privateRoute.post(
+      "/v1/workspaces/:id/invitations",
+      requireWorkspaceMember,
+      this.invitationController.create.bind(this.invitationController)
+    );
+    privateRoute.get(
+      "/v1/invitations",
+      this.invitationController.listMyInvitations.bind(this.invitationController)
+    );
+    privateRoute.patch(
+      "/v1/invitations/:id",
+      this.invitationController.update.bind(this.invitationController)
     );
 
     return privateRoute;

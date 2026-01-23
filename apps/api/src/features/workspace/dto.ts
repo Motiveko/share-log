@@ -1,5 +1,5 @@
 import { Expose, instanceToPlain, plainToInstance } from "class-transformer";
-import { IsString, IsOptional, MinLength, IsUrl, IsEnum } from "class-validator";
+import { IsString, IsOptional, MinLength, IsUrl, IsEnum, IsArray, IsEmail } from "class-validator";
 import {
   Workspace as WorkspaceInterface,
   WorkspaceWithMemberCount,
@@ -100,6 +100,11 @@ export class CreateWorkspaceRequestDto implements CreateWorkspaceDtoInterface {
   @IsString()
   @IsUrl({}, { message: "유효한 URL 형식이어야 합니다." })
   bannerUrl?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsEmail({}, { each: true, message: "유효한 이메일 주소를 입력해주세요." })
+  inviteeEmails?: string[];
 }
 
 export class UpdateWorkspaceRequestDto implements UpdateWorkspaceDtoInterface {

@@ -37,6 +37,7 @@ export interface CreateWorkspaceDto {
   name: string;
   thumbnailUrl?: string;
   bannerUrl?: string;
+  inviteeEmails?: string[];
 }
 
 export interface UpdateWorkspaceDto {
