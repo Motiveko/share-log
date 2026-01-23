@@ -5,6 +5,7 @@ import { WorkspaceRepository } from "@api/features/workspace/workspace-repositor
 import { MemberRepository } from "@api/features/workspace/member-repository";
 import { LastVisitService } from "@api/features/workspace/last-visit-service";
 import { InvitationService } from "@api/features/invitation/invitation-service";
+import { MethodService } from "@api/features/log/method-service";
 import { CreateWorkspaceRequestDto, UpdateWorkspaceRequestDto } from "@api/features/workspace/dto";
 import { NotFoundError } from "@api/errors/not-found";
 import logger from "@api/lib/logger";
@@ -15,7 +16,8 @@ export class WorkspaceService {
     private readonly workspaceRepository: WorkspaceRepository,
     private readonly memberRepository: MemberRepository,
     private readonly lastVisitService: LastVisitService,
-    private readonly invitationService: InvitationService
+    private readonly invitationService: InvitationService,
+    private readonly methodService: MethodService
   ) {}
 
   /**
@@ -42,6 +44,9 @@ export class WorkspaceService {
 
     // 마지막 방문 워크스페이스 갱신
     await this.lastVisitService.set(userId, savedWorkspace.id);
+
+    // 기본 결제 수단 생성
+    await this.methodService.createDefaultMethods(savedWorkspace.id);
 
     // 초대 생성 (inviteeEmails가 있는 경우)
     if (dto.inviteeEmails && dto.inviteeEmails.length > 0) {

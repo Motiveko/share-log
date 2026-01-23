@@ -28,6 +28,10 @@ import { PushController } from "@api/features/push/controller";
 import { WorkspaceController } from "@api/features/workspace/workspace-controller";
 import { MemberController } from "@api/features/workspace/member-controller";
 import { InvitationController } from "@api/features/invitation/invitation-controller";
+import { CategoryController } from "@api/features/log/category-controller";
+import { MethodController } from "@api/features/log/method-controller";
+import { LogController } from "@api/features/log/log-controller";
+import { StatsController } from "@api/features/log/stats-controller";
 import {
   requireWorkspaceMember,
   requireWorkspaceMaster,
@@ -52,6 +56,10 @@ class App {
   private workspaceController!: WorkspaceController;
   private memberController!: MemberController;
   private invitationController!: InvitationController;
+  private categoryController!: CategoryController;
+  private methodController!: MethodController;
+  private logController!: LogController;
+  private statsController!: StatsController;
 
   constructor(
     private redisClient: RedisClient,
@@ -82,6 +90,10 @@ class App {
     this.workspaceController = container.resolve(WorkspaceController);
     this.memberController = container.resolve(MemberController);
     this.invitationController = container.resolve(InvitationController);
+    this.categoryController = container.resolve(CategoryController);
+    this.methodController = container.resolve(MethodController);
+    this.logController = container.resolve(LogController);
+    this.statsController = container.resolve(StatsController);
   }
 
   mountRouter() {
@@ -302,6 +314,79 @@ class App {
     privateRoute.patch(
       "/v1/invitations/:id",
       this.invitationController.update.bind(this.invitationController)
+    );
+
+    // Category routes
+    privateRoute.post(
+      "/v1/workspaces/:id/categories",
+      requireWorkspaceMember,
+      this.categoryController.create.bind(this.categoryController)
+    );
+    privateRoute.get(
+      "/v1/workspaces/:id/categories",
+      requireWorkspaceMember,
+      this.categoryController.list.bind(this.categoryController)
+    );
+    privateRoute.patch(
+      "/v1/workspaces/:id/categories/:categoryId",
+      requireWorkspaceMember,
+      this.categoryController.update.bind(this.categoryController)
+    );
+    privateRoute.delete(
+      "/v1/workspaces/:id/categories/:categoryId",
+      requireWorkspaceMaster,
+      this.categoryController.delete.bind(this.categoryController)
+    );
+
+    // Method routes
+    privateRoute.post(
+      "/v1/workspaces/:id/methods",
+      requireWorkspaceMember,
+      this.methodController.create.bind(this.methodController)
+    );
+    privateRoute.get(
+      "/v1/workspaces/:id/methods",
+      requireWorkspaceMember,
+      this.methodController.list.bind(this.methodController)
+    );
+    privateRoute.patch(
+      "/v1/workspaces/:id/methods/:methodId",
+      requireWorkspaceMember,
+      this.methodController.update.bind(this.methodController)
+    );
+    privateRoute.delete(
+      "/v1/workspaces/:id/methods/:methodId",
+      requireWorkspaceMaster,
+      this.methodController.delete.bind(this.methodController)
+    );
+
+    // Log routes
+    privateRoute.post(
+      "/v1/workspaces/:id/logs",
+      requireWorkspaceMember,
+      this.logController.create.bind(this.logController)
+    );
+    privateRoute.get(
+      "/v1/workspaces/:id/logs",
+      requireWorkspaceMember,
+      this.logController.list.bind(this.logController)
+    );
+    privateRoute.patch(
+      "/v1/workspaces/:id/logs/:logId",
+      requireWorkspaceMember,
+      this.logController.update.bind(this.logController)
+    );
+    privateRoute.delete(
+      "/v1/workspaces/:id/logs/:logId",
+      requireWorkspaceMember,
+      this.logController.delete.bind(this.logController)
+    );
+
+    // Stats routes
+    privateRoute.get(
+      "/v1/workspaces/:id/stats",
+      requireWorkspaceMember,
+      this.statsController.getStats.bind(this.statsController)
     );
 
     return privateRoute;
