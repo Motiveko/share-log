@@ -42,6 +42,13 @@ export const Config = {
   VAPID_PUBLIC_KEY: getEnvVariable("VAPID_PUBLIC_KEY"),
   VAPID_PRIVATE_KEY: getEnvVariable("VAPID_PRIVATE_KEY"),
   VAPID_EMAIL: getEnvVariable("VAPID_EMAIL"),
+  // SMTP Configuration
+  SMTP_HOST: getEnvVariable("SMTP_HOST", false),
+  SMTP_PORT: toNumber(getEnvVariable("SMTP_PORT", false) || "587"),
+  SMTP_USER: getEnvVariable("SMTP_USER", false),
+  SMTP_PASSWORD: getEnvVariable("SMTP_PASSWORD", false),
+  SMTP_FROM: getEnvVariable("SMTP_FROM", false),
+  APP_BASE_URL: getEnvVariable("APP_BASE_URL", false) || "http://localhost:5173",
   env,
   isTest: env === "test",
   isDevelopment: env === "development",

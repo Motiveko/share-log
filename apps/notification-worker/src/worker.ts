@@ -1,23 +1,42 @@
 import { Worker, Job } from "bullmq";
-import {
-  CreateTodoEventDtoInterface,
-  DeleteTodoEventDtoInterface,
-  UpdateTodoEventDtoInterface,
-} from "@repo/interfaces";
+import { NotificationType } from "@repo/entities/notification-setting";
 import { singleton } from "tsyringe";
 import { Config } from "@/config/env";
 import logger from "@/lib/logger";
 import { PushService } from "@/push";
+import { SlackService } from "@/slack-service";
+import { MailService, InvitationEmailPayload } from "@/mail-service";
+import { NotificationResolver, NotificationRecipient } from "@/notification-resolver";
+import {
+  MessageBuilder,
+  LogEventPayload,
+  AdjustmentEventPayload,
+  MemberEventPayload,
+  WorkspaceEventPayload,
+} from "@/message-builder";
 
 export type ActionEventData = Record<string, any>;
 
 export type NotificationEventType =
-  | "todo.created"
-  | "todo.updated"
-  | "todo.deleted";
+  | "log.created"
+  | "log.deleted"
+  | "adjustment.created"
+  | "adjustment.completed"
+  | "member.joined"
+  | "member.left"
+  | "member.role_changed"
+  | "invitation.created";
 
-// TODO : api랑 같이 공유하도록 @repo/interfaces로 분리
-export type ActionEventType = "created" | "updated" | "deleted";
+export type ActionEventType = "created" | "updated" | "deleted" | "completed";
+
+export interface InvitationCreatedEventPayload {
+  invitationId: number;
+  workspaceId: number;
+  workspaceName: string;
+  inviterEmail: string;
+  inviterNickname: string;
+  inviteeEmail: string;
+}
 
 export interface QueueEventData<T = any> {
   type: string;
@@ -28,33 +47,19 @@ export interface QueueEventData<T = any> {
   timestamp: Date;
 }
 
-const MESSAGE_TEMPLATE = {
-  todoCreated: {
-    title: "새 할일이 생성되었습니다",
-    body: "{{title}} 할일이 생성되었습니다",
-  },
-  todoUpdated: {
-    title: "할일이 수정되었습니다",
-    body: "{{title}} 할일이 수정되었습니다",
-  },
-  todoDeleted: {
-    title: "할일이 삭제되었습니다",
-    body: "{{title}} 할일이 삭제되었습니다",
-  },
-};
-
 /**
  * BullMQ Worker - 알림 이벤트를 처리
- *
- * 이 Worker는 별도 프로세스에서 실행되어야 합니다.
- * notification-worker 앱에서 사용하거나,
- * API 서버와 같은 프로세스에서 실행할 수도 있습니다.
  */
 @singleton()
 export class NotificationEventWorker {
   private worker: Worker;
 
-  constructor(private pushService: PushService) {}
+  constructor(
+    private pushService: PushService,
+    private slackService: SlackService,
+    private mailService: MailService,
+    private notificationResolver: NotificationResolver
+  ) {}
 
   start(): void {
     logger.info({
@@ -71,7 +76,7 @@ export class NotificationEventWorker {
           host: Config.REDIS_HOST,
           port: Config.REDIS_PORT,
         },
-        concurrency: 5, // 동시에 처리할 작업 수
+        concurrency: 5,
       }
     );
 
@@ -90,16 +95,38 @@ export class NotificationEventWorker {
 
     try {
       switch (jobName) {
-        case "todo.created":
-          // TODO : data validation 추가
-          await this.handleTodoCreated(payload);
+        // Log events
+        case "log.created":
+          await this.handleLogCreated(payload, userId);
           break;
-        case "todo.updated":
-          await this.handleTodoUpdated(payload);
+        case "log.deleted":
+          await this.handleLogDeleted(payload, userId);
           break;
-        case "todo.deleted":
-          await this.handleTodoDeleted(payload);
+
+        // Adjustment events
+        case "adjustment.created":
+          await this.handleAdjustmentCreated(payload, userId);
           break;
+        case "adjustment.completed":
+          await this.handleAdjustmentCompleted(payload, userId);
+          break;
+
+        // Member events
+        case "member.joined":
+          await this.handleMemberJoined(payload);
+          break;
+        case "member.left":
+          await this.handleMemberLeft(payload, userId);
+          break;
+        case "member.role_changed":
+          await this.handleRoleChanged(payload, userId);
+          break;
+
+        // Invitation events - email
+        case "invitation.created":
+          await this.handleInvitationCreated(payload);
+          break;
+
         default:
           logger.warn(`Unknown event type: ${type}`);
       }
@@ -114,38 +141,148 @@ export class NotificationEventWorker {
         jobId: job.id,
         error,
       });
-      throw error; // 재시도를 위해 에러를 다시 던짐
+      throw error;
     }
   }
 
-  private async handleTodoCreated(
-    data: CreateTodoEventDtoInterface
+  private async handleLogCreated(
+    payload: LogEventPayload,
+    triggerUserId: number
   ): Promise<void> {
-    const { title, userId } = data;
-    await this.pushService.sendToUser(userId, {
-      title: MESSAGE_TEMPLATE.todoCreated.title,
-      body: MESSAGE_TEMPLATE.todoCreated.body.replace("{{title}}", title),
+    await this.sendNotifications(
+      payload.workspaceId,
+      NotificationType.LOG_CREATED,
+      payload,
+      triggerUserId
+    );
+  }
+
+  private async handleLogDeleted(
+    payload: LogEventPayload,
+    triggerUserId: number
+  ): Promise<void> {
+    await this.sendNotifications(
+      payload.workspaceId,
+      NotificationType.LOG_DELETED,
+      payload,
+      triggerUserId
+    );
+  }
+
+  private async handleAdjustmentCreated(
+    payload: AdjustmentEventPayload,
+    triggerUserId: number
+  ): Promise<void> {
+    await this.sendNotifications(
+      payload.workspaceId,
+      NotificationType.ADJUSTMENT_CREATED,
+      payload,
+      triggerUserId
+    );
+  }
+
+  private async handleAdjustmentCompleted(
+    payload: AdjustmentEventPayload,
+    triggerUserId: number
+  ): Promise<void> {
+    await this.sendNotifications(
+      payload.workspaceId,
+      NotificationType.ADJUSTMENT_COMPLETED,
+      payload,
+      triggerUserId
+    );
+  }
+
+  private async handleMemberJoined(payload: MemberEventPayload): Promise<void> {
+    // 새로 참여한 멤버는 아직 알림 설정이 없을 수 있으므로 제외
+    await this.sendNotifications(
+      payload.workspaceId,
+      NotificationType.MEMBER_JOINED,
+      payload,
+      payload.userId
+    );
+  }
+
+  private async handleMemberLeft(
+    payload: MemberEventPayload,
+    triggerUserId: number
+  ): Promise<void> {
+    await this.sendNotifications(
+      payload.workspaceId,
+      NotificationType.MEMBER_LEFT,
+      payload,
+      triggerUserId
+    );
+  }
+
+  private async handleRoleChanged(
+    payload: MemberEventPayload,
+    triggerUserId: number
+  ): Promise<void> {
+    await this.sendNotifications(
+      payload.workspaceId,
+      NotificationType.ROLE_CHANGED,
+      payload,
+      triggerUserId
+    );
+  }
+
+  private async handleInvitationCreated(
+    payload: InvitationCreatedEventPayload
+  ): Promise<void> {
+    const { workspaceName, inviterNickname, inviterEmail, inviteeEmail } =
+      payload;
+
+    await this.mailService.sendInvitationEmail({
+      inviteeEmail,
+      workspaceName,
+      inviterNickname,
+      inviterEmail,
     });
   }
 
-  private async handleTodoUpdated(
-    data: UpdateTodoEventDtoInterface
+  /**
+   * 웹 푸시 및 Slack 알림 발송
+   */
+  private async sendNotifications(
+    workspaceId: number,
+    notificationType: NotificationType,
+    payload: WorkspaceEventPayload,
+    excludeUserId?: number
   ): Promise<void> {
-    const { title, userId } = data;
-    await this.pushService.sendToUser(userId, {
-      title: MESSAGE_TEMPLATE.todoUpdated.title,
-      body: MESSAGE_TEMPLATE.todoUpdated.body.replace("{{title}}", title),
-    });
-  }
+    const { webPushRecipients, slackRecipients } =
+      await this.notificationResolver.getAllRecipients(
+        workspaceId,
+        notificationType,
+        excludeUserId
+      );
 
-  private async handleTodoDeleted(
-    data: DeleteTodoEventDtoInterface
-  ): Promise<void> {
-    const { title, userId } = data;
-    await this.pushService.sendToUser(userId, {
-      title: MESSAGE_TEMPLATE.todoDeleted.title,
-      body: MESSAGE_TEMPLATE.todoDeleted.body.replace("{{title}}", title),
-    });
+    const pushMessage = MessageBuilder.build(notificationType, payload);
+    const slackMessage = MessageBuilder.buildSlackMessage(
+      notificationType,
+      payload
+    );
+
+    // 웹 푸시 발송
+    await Promise.all(
+      webPushRecipients.map((recipient) =>
+        this.pushService.sendToUser(recipient.userId, pushMessage)
+      )
+    );
+
+    // Slack 발송
+    const slackTargets = slackRecipients
+      .filter((r): r is NotificationRecipient & { slackWebhookUrl: string } =>
+        Boolean(r.slackWebhookUrl)
+      )
+      .map((r) => ({
+        webhookUrl: r.slackWebhookUrl,
+        userId: r.userId,
+      }));
+
+    if (slackTargets.length > 0) {
+      await this.slackService.sendToMany(slackTargets, slackMessage);
+    }
   }
 
   private setupEventListeners(): void {

@@ -59,6 +59,14 @@ function Lnb() {
                       정산
                     </Link>
                   </li>
+                  <li>
+                    <Link
+                      to={`/workspace/${ws.id}/settings`}
+                      className="block px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      설정
+                    </Link>
+                  </li>
                 </ul>
               )}
             </li>

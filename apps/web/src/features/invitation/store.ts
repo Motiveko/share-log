@@ -14,6 +14,7 @@ interface InvitationState {
 
 interface InvitationActions {
   fetchInvitations: () => Promise<void>;
+  createInvitation: (workspaceId: number, email: string) => Promise<void>;
   acceptInvitation: (id: number) => Promise<void>;
   rejectInvitation: (id: number) => Promise<void>;
   reset: () => void;
@@ -46,6 +47,15 @@ export const useInvitationStore = create<InvitationStore>()(
           set((state) => {
             state.status = "error";
           });
+        }
+      },
+
+      createInvitation: async (workspaceId: number, email: string) => {
+        try {
+          await API.invitation.create(workspaceId, { inviteeEmail: email });
+        } catch (error) {
+          logger.error(error);
+          throw error;
         }
       },
 

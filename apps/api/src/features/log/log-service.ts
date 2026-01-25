@@ -1,13 +1,21 @@
 import { singleton } from "tsyringe";
 import { Log } from "@repo/entities/log";
 import { LogRepository } from "@api/features/log/log-repository";
+import { WorkspaceRepository } from "@api/features/workspace/workspace-repository";
+import { UserService } from "@api/features/user/service";
+import { ActionQueuePublisher } from "@api/lib/action-queue";
 import { NotFoundError } from "@api/errors/not-found";
 import { ForbiddenError } from "@api/errors/forbidden";
 import type { CreateLogDto, UpdateLogDto, LogListQuery } from "@repo/interfaces";
 
 @singleton()
 export class LogService {
-  constructor(private readonly logRepository: LogRepository) {}
+  constructor(
+    private readonly logRepository: LogRepository,
+    private readonly workspaceRepository: WorkspaceRepository,
+    private readonly userService: UserService,
+    private readonly actionQueuePublisher: ActionQueuePublisher
+  ) {}
 
   /**
    * 로그 생성
@@ -28,7 +36,12 @@ export class LogService {
     log.methodId = dto.methodId;
 
     const saved = await this.logRepository.save(log);
-    return this.logRepository.findById(saved.id) as Promise<Log>;
+    const result = await this.logRepository.findById(saved.id) as Log;
+
+    // 이벤트 발행
+    await this.publishLogEvent("created", result, userId);
+
+    return result;
   }
 
   /**
@@ -98,6 +111,45 @@ export class LogService {
       throw new ForbiddenError("본인이 작성한 로그만 삭제할 수 있습니다.");
     }
 
+    // 이벤트 발행 (삭제 전 정보 저장)
+    await this.publishLogEvent("deleted", log, userId);
+
     await this.logRepository.remove(log);
+  }
+
+  /**
+   * 로그 이벤트 발행 헬퍼
+   */
+  private async publishLogEvent(
+    type: "created" | "deleted",
+    log: Log,
+    userId: number
+  ): Promise<void> {
+    try {
+      const [workspace, user] = await Promise.all([
+        this.workspaceRepository.findById(log.workspaceId),
+        this.userService.getById(userId),
+      ]);
+
+      await this.actionQueuePublisher.publish({
+        type,
+        aggregateType: "log",
+        aggregateId: log.id,
+        userId,
+        payload: {
+          workspaceId: log.workspaceId,
+          workspaceName: workspace?.name ?? "",
+          userId,
+          userNickname: user?.nickname ?? user?.email ?? "",
+          logId: log.id,
+          amount: Number(log.amount),
+          memo: log.memo,
+          categoryName: log.category?.name,
+        },
+      });
+    } catch (error) {
+      // 이벤트 발행 실패해도 메인 로직에 영향 주지 않음
+      console.error("Failed to publish log event:", error);
+    }
   }
 }

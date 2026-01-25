@@ -5,7 +5,14 @@ import { Queue, type ConnectionOptions } from "bullmq";
 import { singleton } from "tsyringe";
 
 // Action Event Types
-export type ActionEventType = "created" | "updated" | "deleted";
+export type ActionEventType =
+  | "created"
+  | "updated"
+  | "deleted"
+  | "completed"
+  | "joined"
+  | "left"
+  | "role_changed";
 
 export interface ActionEvent<T = unknown> {
   type: ActionEventType;

@@ -1,4 +1,8 @@
-import type { WorkspaceWithMemberCount, WorkspaceMemberWithUser } from "@repo/interfaces";
+import type {
+  WorkspaceWithMemberCount,
+  WorkspaceMemberWithUser,
+  UpdateMemberRoleDto,
+} from "@repo/interfaces";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
@@ -21,6 +25,12 @@ interface WorkspaceActions {
   fetchWorkspace: (workspaceId: number) => Promise<void>;
   fetchLastVisit: () => Promise<void>;
   fetchMembers: (workspaceId: number) => Promise<void>;
+  updateMemberRole: (
+    workspaceId: number,
+    userId: number,
+    dto: UpdateMemberRoleDto
+  ) => Promise<void>;
+  expelMember: (workspaceId: number, userId: number) => Promise<void>;
   setCurrentWorkspace: (workspace: WorkspaceWithMemberCount | null) => void;
   reset: () => void;
 }
@@ -103,6 +113,41 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           set((state) => {
             state.membersStatus = "error";
           });
+        }
+      },
+
+      updateMemberRole: async (
+        workspaceId: number,
+        userId: number,
+        dto: UpdateMemberRoleDto
+      ) => {
+        try {
+          const updatedMember = await API.workspace.updateMemberRole(
+            workspaceId,
+            userId,
+            dto
+          );
+          set((state) => {
+            const index = state.members.findIndex((m) => m.userId === userId);
+            if (index !== -1) {
+              state.members[index] = updatedMember;
+            }
+          });
+        } catch (error) {
+          logger.error(error);
+          throw error;
+        }
+      },
+
+      expelMember: async (workspaceId: number, userId: number) => {
+        try {
+          await API.workspace.expelMember(workspaceId, userId);
+          set((state) => {
+            state.members = state.members.filter((m) => m.userId !== userId);
+          });
+        } catch (error) {
+          logger.error(error);
+          throw error;
         }
       },
 

@@ -2,6 +2,9 @@ import { singleton } from "tsyringe";
 import { Adjustment, AdjustmentStatus } from "@repo/entities/adjustment";
 import { AdjustmentRepository } from "@api/features/adjustment/adjustment-repository";
 import { AdjustmentCalculator } from "@api/features/adjustment/adjustment-calculator";
+import { WorkspaceRepository } from "@api/features/workspace/workspace-repository";
+import { UserService } from "@api/features/user/service";
+import { ActionQueuePublisher } from "@api/lib/action-queue";
 import { NotFoundError } from "@api/errors/not-found";
 import { ForbiddenError } from "@api/errors/forbidden";
 import { BadRequestError } from "@api/errors/bad-request";
@@ -15,7 +18,10 @@ import type {
 export class AdjustmentService {
   constructor(
     private readonly adjustmentRepository: AdjustmentRepository,
-    private readonly adjustmentCalculator: AdjustmentCalculator
+    private readonly adjustmentCalculator: AdjustmentCalculator,
+    private readonly workspaceRepository: WorkspaceRepository,
+    private readonly userService: UserService,
+    private readonly actionQueuePublisher: ActionQueuePublisher
   ) {}
 
   /**
@@ -57,7 +63,12 @@ export class AdjustmentService {
     adjustment.result = result;
 
     const saved = await this.adjustmentRepository.save(adjustment);
-    return this.adjustmentRepository.findById(saved.id) as Promise<Adjustment>;
+    const createdAdjustment = await this.adjustmentRepository.findById(saved.id) as Adjustment;
+
+    // 이벤트 발행
+    await this.publishAdjustmentEvent("created", createdAdjustment, creatorId);
+
+    return createdAdjustment;
   }
 
   /**
@@ -153,7 +164,12 @@ export class AdjustmentService {
     adjustment.completedAt = new Date();
 
     const saved = await this.adjustmentRepository.save(adjustment);
-    return this.adjustmentRepository.findById(saved.id) as Promise<Adjustment>;
+    const completedAdjustment = await this.adjustmentRepository.findById(saved.id) as Adjustment;
+
+    // 이벤트 발행
+    await this.publishAdjustmentEvent("completed", completedAdjustment, userId);
+
+    return completedAdjustment;
   }
 
   /**
@@ -174,5 +190,40 @@ export class AdjustmentService {
     }
 
     await this.adjustmentRepository.remove(adjustment);
+  }
+
+  /**
+   * 정산 이벤트 발행 헬퍼
+   */
+  private async publishAdjustmentEvent(
+    type: "created" | "completed",
+    adjustment: Adjustment,
+    userId: number
+  ): Promise<void> {
+    try {
+      const [workspace, user] = await Promise.all([
+        this.workspaceRepository.findById(adjustment.workspaceId),
+        this.userService.getById(userId),
+      ]);
+
+      await this.actionQueuePublisher.publish({
+        type,
+        aggregateType: "adjustment",
+        aggregateId: adjustment.id,
+        userId,
+        payload: {
+          workspaceId: adjustment.workspaceId,
+          workspaceName: workspace?.name ?? "",
+          userId,
+          userNickname: user?.nickname ?? user?.email ?? "",
+          adjustmentId: adjustment.id,
+          title: adjustment.name,
+          totalAmount: adjustment.result?.totalExpense ?? 0,
+        },
+      });
+    } catch (error) {
+      // 이벤트 발행 실패해도 메인 로직에 영향 주지 않음
+      console.error("Failed to publish adjustment event:", error);
+    }
   }
 }

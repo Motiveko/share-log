@@ -5,9 +5,12 @@ import { InvitationRepository } from "@api/features/invitation/invitation-reposi
 import { UserService } from "@api/features/user/service";
 import { MemberService } from "@api/features/workspace/member-service";
 import { WorkspaceService } from "@api/features/workspace/workspace-service";
+import { WorkspaceRepository } from "@api/features/workspace/workspace-repository";
+import { ActionQueuePublisher } from "@api/lib/action-queue";
 import { NotFoundError } from "@api/errors/not-found";
 import { ForbiddenError } from "@api/errors/forbidden";
 import { BadRequestError } from "@api/errors/bad-request";
+import { NotificationSettingService } from "@api/features/notification-setting/notification-setting-service";
 
 @singleton()
 export class InvitationService {
@@ -16,7 +19,10 @@ export class InvitationService {
     private readonly userService: UserService,
     private readonly memberService: MemberService,
     @inject(delay(() => WorkspaceService))
-    private readonly workspaceService: WorkspaceService
+    private readonly workspaceService: WorkspaceService,
+    private readonly workspaceRepository: WorkspaceRepository,
+    private readonly actionQueuePublisher: ActionQueuePublisher,
+    private readonly notificationSettingService: NotificationSettingService
   ) {}
 
   /**
@@ -73,7 +79,12 @@ export class InvitationService {
     }
     invitation.status = InvitationStatus.PENDING;
 
-    return this.invitationRepository.save(invitation);
+    const saved = await this.invitationRepository.save(invitation);
+
+    // 초대 이메일 발송 이벤트 발행
+    await this.publishInvitationCreatedEvent(saved, inviterId);
+
+    return saved;
   }
 
   /**
@@ -152,10 +163,19 @@ export class InvitationService {
       MemberStatus.ACCEPTED
     );
 
+    // 새 멤버의 기본 알림 설정 생성
+    await this.notificationSettingService.createDefaultForMember(
+      invitation.workspaceId,
+      userId
+    );
+
     // 초대 상태 변경
     invitation.status = InvitationStatus.ACCEPTED;
     invitation.inviteeId = userId;
     await this.invitationRepository.save(invitation);
+
+    // 멤버 참여 이벤트 발행
+    await this.publishMemberJoinedEvent(invitation.workspaceId, userId, user);
   }
 
   /**
@@ -190,5 +210,67 @@ export class InvitationService {
     // 초대 상태 변경
     invitation.status = InvitationStatus.REJECTED;
     await this.invitationRepository.save(invitation);
+  }
+
+  /**
+   * 초대 생성 이벤트 발행 (이메일 발송용)
+   */
+  private async publishInvitationCreatedEvent(
+    invitation: Invitation,
+    inviterId: number
+  ): Promise<void> {
+    try {
+      const [workspace, inviter] = await Promise.all([
+        this.workspaceRepository.findById(invitation.workspaceId),
+        this.userService.getById(inviterId),
+      ]);
+
+      await this.actionQueuePublisher.publish({
+        type: "created",
+        aggregateType: "invitation",
+        aggregateId: invitation.id,
+        userId: inviterId,
+        payload: {
+          invitationId: invitation.id,
+          workspaceId: invitation.workspaceId,
+          workspaceName: workspace?.name ?? "",
+          inviterEmail: inviter?.email ?? "",
+          inviterNickname: inviter?.nickname ?? "",
+          inviteeEmail: invitation.inviteeEmail,
+        },
+      });
+    } catch (error) {
+      // 이벤트 발행 실패해도 메인 로직에 영향 주지 않음
+      console.error("Failed to publish invitation created event:", error);
+    }
+  }
+
+  /**
+   * 멤버 참여 이벤트 발행
+   */
+  private async publishMemberJoinedEvent(
+    workspaceId: number,
+    userId: number,
+    user: { email?: string; nickname?: string | null }
+  ): Promise<void> {
+    try {
+      const workspace = await this.workspaceRepository.findById(workspaceId);
+
+      await this.actionQueuePublisher.publish({
+        type: "joined",
+        aggregateType: "member",
+        aggregateId: userId,
+        userId,
+        payload: {
+          workspaceId,
+          workspaceName: workspace?.name ?? "",
+          userId,
+          userNickname: user.nickname ?? user.email ?? "",
+        },
+      });
+    } catch (error) {
+      // 이벤트 발행 실패해도 메인 로직에 영향 주지 않음
+      console.error("Failed to publish member joined event:", error);
+    }
   }
 }

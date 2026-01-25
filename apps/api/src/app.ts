@@ -33,6 +33,7 @@ import { MethodController } from "@api/features/log/method-controller";
 import { LogController } from "@api/features/log/log-controller";
 import { StatsController } from "@api/features/log/stats-controller";
 import { AdjustmentController } from "@api/features/adjustment/adjustment-controller";
+import { NotificationSettingController } from "@api/features/notification-setting/notification-setting-controller";
 import {
   requireWorkspaceMember,
   requireWorkspaceMaster,
@@ -62,6 +63,7 @@ class App {
   private logController!: LogController;
   private statsController!: StatsController;
   private adjustmentController!: AdjustmentController;
+  private notificationSettingController!: NotificationSettingController;
 
   constructor(
     private redisClient: RedisClient,
@@ -97,6 +99,9 @@ class App {
     this.logController = container.resolve(LogController);
     this.statsController = container.resolve(StatsController);
     this.adjustmentController = container.resolve(AdjustmentController);
+    this.notificationSettingController = container.resolve(
+      NotificationSettingController
+    );
   }
 
   mountRouter() {
@@ -422,6 +427,22 @@ class App {
       "/v1/workspaces/:id/adjustments/:adjustmentId/complete",
       requireWorkspaceMember,
       this.adjustmentController.complete.bind(this.adjustmentController)
+    );
+
+    // Notification setting routes
+    privateRoute.get(
+      "/v1/workspaces/:workspaceId/notification-settings",
+      requireWorkspaceMember,
+      this.notificationSettingController.get.bind(
+        this.notificationSettingController
+      )
+    );
+    privateRoute.patch(
+      "/v1/workspaces/:workspaceId/notification-settings",
+      requireWorkspaceMember,
+      this.notificationSettingController.update.bind(
+        this.notificationSettingController
+      )
     );
 
     return privateRoute;

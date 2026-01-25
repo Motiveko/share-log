@@ -52,7 +52,8 @@ export class MemberController {
     const member = await this.memberService.updateRole(
       workspaceId,
       targetUserId,
-      req.body.role
+      req.body.role,
+      req.user.id
     );
     // 유저 정보를 다시 조회해서 반환
     const members = await this.memberService.findMembersByWorkspace(workspaceId);

@@ -5,12 +5,20 @@ import {
   MemberStatus,
 } from "@repo/entities/workspace-member";
 import { MemberRepository } from "@api/features/workspace/member-repository";
+import { WorkspaceRepository } from "@api/features/workspace/workspace-repository";
+import { UserService } from "@api/features/user/service";
+import { ActionQueuePublisher } from "@api/lib/action-queue";
 import { NotFoundError } from "@api/errors/not-found";
 import { ForbiddenError } from "@api/errors/forbidden";
 
 @singleton()
 export class MemberService {
-  constructor(private readonly memberRepository: MemberRepository) {}
+  constructor(
+    private readonly memberRepository: MemberRepository,
+    private readonly workspaceRepository: WorkspaceRepository,
+    private readonly userService: UserService,
+    private readonly actionQueuePublisher: ActionQueuePublisher
+  ) {}
 
   /**
    * 워크스페이스의 ACCEPTED 멤버 목록 조회
@@ -67,7 +75,8 @@ export class MemberService {
   async updateRole(
     workspaceId: number,
     targetUserId: number,
-    newRole: MemberRole
+    newRole: MemberRole,
+    requestUserId: number
   ) {
     const member = await this.memberRepository.findAcceptedByWorkspaceAndUser(
       workspaceId,
@@ -90,7 +99,18 @@ export class MemberService {
     }
 
     member.role = newRole;
-    return this.memberRepository.save(member);
+    const saved = await this.memberRepository.save(member);
+
+    // 이벤트 발행
+    await this.publishMemberEvent(
+      "role_changed",
+      workspaceId,
+      targetUserId,
+      requestUserId,
+      newRole
+    );
+
+    return saved;
   }
 
   /**
@@ -128,6 +148,53 @@ export class MemberService {
 
     // 레코드 삭제 대신 status를 EXPELLED로 변경
     member.status = MemberStatus.EXPELLED;
-    return this.memberRepository.save(member);
+    const saved = await this.memberRepository.save(member);
+
+    // 이벤트 발행
+    await this.publishMemberEvent(
+      "left",
+      workspaceId,
+      targetUserId,
+      requestUserId
+    );
+
+    return saved;
+  }
+
+  /**
+   * 멤버 이벤트 발행 헬퍼
+   */
+  private async publishMemberEvent(
+    type: "joined" | "left" | "role_changed",
+    workspaceId: number,
+    targetUserId: number,
+    requestUserId: number,
+    newRole?: MemberRole
+  ): Promise<void> {
+    try {
+      const [workspace, targetUser] = await Promise.all([
+        this.workspaceRepository.findById(workspaceId),
+        this.userService.getById(targetUserId),
+      ]);
+
+      await this.actionQueuePublisher.publish({
+        type,
+        aggregateType: "member",
+        aggregateId: targetUserId,
+        userId: requestUserId,
+        payload: {
+          workspaceId,
+          workspaceName: workspace?.name ?? "",
+          userId: targetUserId,
+          userNickname: targetUser?.nickname ?? targetUser?.email ?? "",
+          targetUserId,
+          targetUserNickname: targetUser?.nickname ?? targetUser?.email ?? "",
+          newRole: newRole ?? undefined,
+        },
+      });
+    } catch (error) {
+      // 이벤트 발행 실패해도 메인 로직에 영향 주지 않음
+      console.error("Failed to publish member event:", error);
+    }
   }
 }
