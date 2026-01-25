@@ -32,6 +32,7 @@ import { CategoryController } from "@api/features/log/category-controller";
 import { MethodController } from "@api/features/log/method-controller";
 import { LogController } from "@api/features/log/log-controller";
 import { StatsController } from "@api/features/log/stats-controller";
+import { AdjustmentController } from "@api/features/adjustment/adjustment-controller";
 import {
   requireWorkspaceMember,
   requireWorkspaceMaster,
@@ -60,6 +61,7 @@ class App {
   private methodController!: MethodController;
   private logController!: LogController;
   private statsController!: StatsController;
+  private adjustmentController!: AdjustmentController;
 
   constructor(
     private redisClient: RedisClient,
@@ -94,6 +96,7 @@ class App {
     this.methodController = container.resolve(MethodController);
     this.logController = container.resolve(LogController);
     this.statsController = container.resolve(StatsController);
+    this.adjustmentController = container.resolve(AdjustmentController);
   }
 
   mountRouter() {
@@ -387,6 +390,38 @@ class App {
       "/v1/workspaces/:id/stats",
       requireWorkspaceMember,
       this.statsController.getStats.bind(this.statsController)
+    );
+
+    // Adjustment routes
+    privateRoute.post(
+      "/v1/workspaces/:id/adjustments",
+      requireWorkspaceMember,
+      this.adjustmentController.create.bind(this.adjustmentController)
+    );
+    privateRoute.get(
+      "/v1/workspaces/:id/adjustments",
+      requireWorkspaceMember,
+      this.adjustmentController.list.bind(this.adjustmentController)
+    );
+    privateRoute.get(
+      "/v1/workspaces/:id/adjustments/:adjustmentId",
+      requireWorkspaceMember,
+      this.adjustmentController.get.bind(this.adjustmentController)
+    );
+    privateRoute.patch(
+      "/v1/workspaces/:id/adjustments/:adjustmentId",
+      requireWorkspaceMember,
+      this.adjustmentController.update.bind(this.adjustmentController)
+    );
+    privateRoute.delete(
+      "/v1/workspaces/:id/adjustments/:adjustmentId",
+      requireWorkspaceMember,
+      this.adjustmentController.delete.bind(this.adjustmentController)
+    );
+    privateRoute.post(
+      "/v1/workspaces/:id/adjustments/:adjustmentId/complete",
+      requireWorkspaceMember,
+      this.adjustmentController.complete.bind(this.adjustmentController)
     );
 
     return privateRoute;

@@ -49,6 +49,18 @@ function Lnb() {
                   {ws.memberCount}명
                 </span>
               </Link>
+              {currentWorkspaceId === ws.id && (
+                <ul className="ml-4 mt-1 space-y-1">
+                  <li>
+                    <Link
+                      to={`/workspace/${ws.id}/adjustment`}
+                      className="block px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      정산
+                    </Link>
+                  </li>
+                </ul>
+              )}
             </li>
           ))}
         </ul>

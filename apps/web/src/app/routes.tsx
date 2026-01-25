@@ -9,6 +9,9 @@ import ProfilePage from "@web/pages/profile";
 import WorkspaceEmptyPage from "@web/pages/workspace-empty";
 import WorkspaceNewPage from "@web/pages/workspace-new";
 import WorkspaceDashboardPage from "@web/pages/workspace-dashboard";
+import AdjustmentListPage from "@web/pages/adjustment-list";
+import AdjustmentNewPage from "@web/pages/adjustment-new";
+import AdjustmentDetailPage from "@web/pages/adjustment-detail";
 import { postRenderSetup } from "@web/init";
 import ProtectedRoute from "@web/routes/protected-route";
 import WorkspaceRoute from "@web/routes/workspace-route";
@@ -83,6 +86,19 @@ function AppRoutes() {
             <Route
               path="workspace/:workspaceId"
               element={<WorkspaceDashboardPage />}
+            />
+            {/* Adjustment routes */}
+            <Route
+              path="workspace/:workspaceId/adjustment"
+              element={<AdjustmentListPage />}
+            />
+            <Route
+              path="workspace/:workspaceId/adjustment/new"
+              element={<AdjustmentNewPage />}
+            />
+            <Route
+              path="workspace/:workspaceId/adjustment/:adjustmentId"
+              element={<AdjustmentDetailPage />}
             />
           </Route>
           <Route element={<NotFoundPage />} path="*" />

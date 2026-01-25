@@ -192,25 +192,25 @@
 
 ### 7.1 정산 API
 
-- [ ] POST /workspaces/:id/adjustments - 생성
-- [ ] GET /workspaces/:id/adjustments - 목록
-- [ ] GET /workspaces/:id/adjustments/:adjustmentId - 상세
-- [ ] PATCH /workspaces/:id/adjustments/:adjustmentId - 수정
-- [ ] DELETE /workspaces/:id/adjustments/:adjustmentId - 삭제
-- [ ] POST /workspaces/:id/adjustments/:adjustmentId/complete - 완료 처리
+- [x] POST /workspaces/:id/adjustments - 생성
+- [x] GET /workspaces/:id/adjustments - 목록
+- [x] GET /workspaces/:id/adjustments/:adjustmentId - 상세
+- [x] PATCH /workspaces/:id/adjustments/:adjustmentId - 수정
+- [x] DELETE /workspaces/:id/adjustments/:adjustmentId - 삭제
+- [x] POST /workspaces/:id/adjustments/:adjustmentId/complete - 완료 처리
 
 ### 7.2 정산 계산 로직
 
-- [ ] 정산 대상 Log 필터링 (기간, 카테고리, 수단)
-- [ ] 균등 분할 계산
-- [ ] 송금 최적화 알고리즘 (최소 송금 횟수)
+- [x] 정산 대상 Log 필터링 (기간, 카테고리, 수단)
+- [x] 균등 분할 계산
+- [x] 송금 최적화 알고리즘 (최소 송금 횟수)
 
 ### 7.3 프론트엔드 페이지
 
-- [ ] 정산 목록 (/workspace/:id/adjustment)
-- [ ] 정산 생성 (/workspace/:id/adjustment/new)
-- [ ] 정산 상세 (/workspace/:id/adjustment/:adjustmentId)
-- [ ] 정산 수정 (/workspace/:id/adjustment/:adjustmentId?update)
+- [x] 정산 목록 (/workspace/:id/adjustment)
+- [x] 정산 생성 (/workspace/:id/adjustment/new)
+- [x] 정산 상세 (/workspace/:id/adjustment/:adjustmentId)
+- [x] 정산 수정 (/workspace/:id/adjustment/:adjustmentId?update)
 
 ---
 
