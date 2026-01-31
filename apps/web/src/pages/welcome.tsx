@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "@web/features/auth/store";
 import { API } from "@web/api";
-import { toast } from "react-toastify";
+import { toastService } from "@web/features/toast/toast-service";
 import {
   Card,
   CardContent,
@@ -33,7 +33,7 @@ function WelcomePage() {
     try {
       const updatedUser = await API.user.patch({ nickname });
       updateUser(updatedUser);
-      toast.success("닉네임이 설정되었습니다!");
+      toastService.success("닉네임이 설정되었습니다!");
       navigate("/");
     } catch (err) {
       setError("닉네임 설정에 실패했습니다. 다시 시도해주세요.");

@@ -12,7 +12,7 @@ import { Button } from "@web/components/ui/button";
 import { Spinner } from "@web/components/ui/spinner";
 import { API } from "@web/api";
 import { cn } from "@web/lib/utils";
-import { toast } from "react-toastify";
+import { toastService } from "@web/features/toast/toast-service";
 import { getErrorMessage } from "@web/lib/error";
 import type { SearchUser } from "@repo/interfaces";
 
@@ -69,13 +69,13 @@ export function InviteUserDialog({
     setIsLoading(true);
     try {
       await API.invitation.create(workspaceId, { inviteeEmail: selectedEmail });
-      toast.success("초대가 발송되었습니다.");
+      toastService.success("초대가 발송되었습니다.");
       setOpen(false);
       setSelectedEmail("");
       setSearchQuery("");
       onInvited?.();
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toastService.error(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

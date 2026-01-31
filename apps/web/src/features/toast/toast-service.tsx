@@ -1,4 +1,4 @@
-import { toast, Id } from "react-toastify";
+import { toast, ExternalToast } from "sonner";
 import Toast from "@web/features/toast/toast";
 
 const DEFAULT_DURATION = 4000;
@@ -28,24 +28,23 @@ const addToast = ({
   action,
   duration = DEFAULT_DURATION,
   position = "top-right",
-}: AddToastOptions): Id => {
-  return toast(
-    ({ closeToast }) => (
+}: AddToastOptions): string | number => {
+  const options: ExternalToast = {
+    duration: duration === false ? Infinity : duration,
+    position,
+  };
+
+  return toast.custom(
+    (id) => (
       <Toast
         action={action}
-        closeToast={closeToast}
+        closeToast={() => toast.dismiss(id)}
         message={message}
         title={title}
         type={type}
       />
     ),
-    {
-      autoClose: duration || false,
-      position,
-      hideProgressBar: true,
-      closeButton: false,
-      className: "!bg-transparent !shadow-none !p-0 !m-0",
-    }
+    options
   );
 };
 
@@ -63,7 +62,7 @@ const toastService = {
   info: (message: string, options?: Omit<AddToastOptions, "type" | "message">) =>
     addToast({ message, type: "info", ...options }),
 
-  dismiss: (toastId?: Id) => toast.dismiss(toastId),
+  dismiss: (toastId?: string | number) => toast.dismiss(toastId),
 
   dismissAll: () => toast.dismiss(),
 };

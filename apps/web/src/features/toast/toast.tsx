@@ -3,7 +3,7 @@ import { cn } from "@web/lib/utils";
 import { Button } from "@web/components/ui/button";
 
 interface ToastProps {
-  closeToast: () => void;
+  closeToast?: () => void;
   title?: string;
   message: string;
   type: "success" | "error" | "warning" | "info";
@@ -50,14 +50,13 @@ function Toast({ closeToast, title, message, type, action }: ToastProps) {
 
   const handleAction = () => {
     action?.onClick();
-    closeToast();
+    closeToast?.();
   };
 
   return (
     <div
       className={cn(
-        "relative flex w-full items-start gap-3 rounded-lg border p-4 shadow-lg",
-        "animate-in slide-in-from-top-2 fade-in duration-200",
+        "relative flex w-[356px] items-start gap-3 rounded-lg border p-4 shadow-lg",
         config.containerClass
       )}
     >
@@ -84,7 +83,7 @@ function Toast({ closeToast, title, message, type, action }: ToastProps) {
       </div>
 
       <button
-        onClick={closeToast}
+        onClick={() => closeToast?.()}
         className={cn(
           "shrink-0 rounded-md p-1 opacity-60 transition-opacity hover:opacity-100",
           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"

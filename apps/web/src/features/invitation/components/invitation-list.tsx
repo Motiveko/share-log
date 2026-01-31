@@ -10,7 +10,7 @@ import { Button } from "@web/components/ui/button";
 import { Spinner } from "@web/components/ui/spinner";
 import { useInvitationStore } from "@web/features/invitation/store";
 import { useWorkspaceStore } from "@web/features/workspace/store";
-import { toast } from "react-toastify";
+import { toastService } from "@web/features/toast/toast-service";
 import { useNavigate } from "react-router";
 import { getErrorMessage } from "@web/lib/error";
 
@@ -29,11 +29,11 @@ export function InvitationList() {
     setProcessingId(id);
     try {
       await acceptInvitation(id);
-      toast.success("초대를 수락했습니다.");
+      toastService.success("초대를 수락했습니다.");
       await fetchWorkspaces();
       navigate(`/workspace/${workspaceId}`);
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toastService.error(getErrorMessage(error));
     } finally {
       setProcessingId(null);
     }
@@ -43,9 +43,9 @@ export function InvitationList() {
     setProcessingId(id);
     try {
       await rejectInvitation(id);
-      toast.success("초대를 거절했습니다.");
+      toastService.success("초대를 거절했습니다.");
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toastService.error(getErrorMessage(error));
     } finally {
       setProcessingId(null);
     }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "@web/features/auth/store";
 import { API } from "@web/api";
-import { toast } from "react-toastify";
+import { toastService } from "@web/features/toast/toast-service";
 import {
   Card,
   CardContent,
@@ -69,9 +69,9 @@ function ProfilePage() {
         slackWebhookUrl: slackWebhookUrl || undefined,
       });
       updateUser(updatedUser);
-      toast.success("프로필이 수정되었습니다!");
+      toastService.success("프로필이 수정되었습니다!");
     } catch (err) {
-      toast.error("프로필 수정에 실패했습니다. 다시 시도해주세요.");
+      toastService.error("프로필 수정에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }
@@ -81,11 +81,11 @@ function ProfilePage() {
     setIsDeleting(true);
     try {
       await API.user.deleteAccount();
-      toast.success("회원 탈퇴가 완료되었습니다.");
+      toastService.success("회원 탈퇴가 완료되었습니다.");
       await logout();
       navigate("/login");
     } catch (err) {
-      toast.error("회원 탈퇴에 실패했습니다. 다시 시도해주세요.");
+      toastService.error("회원 탈퇴에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
