@@ -64,7 +64,7 @@ export class MemberService {
   }
 
   /**
-   * 새 멤버 생성
+   * 새 멤버 생성 또는 기존 EXPELLED 멤버 재활성화
    */
   async createMember(
     workspaceId: number,
@@ -72,6 +72,24 @@ export class MemberService {
     role: MemberRole,
     status: MemberStatus
   ): Promise<WorkspaceMember> {
+    // 기존 멤버 레코드 확인 (status 무관)
+    const existingMember = await this.memberRepository.findByWorkspaceAndUser(
+      workspaceId,
+      userId
+    );
+
+    if (existingMember) {
+      // EXPELLED 상태면 재활성화
+      if (existingMember.status === MemberStatus.EXPELLED) {
+        existingMember.status = status;
+        existingMember.role = role;
+        return this.memberRepository.save(existingMember);
+      }
+      // 이미 ACCEPTED 상태면 그대로 반환 (중복 생성 방지)
+      return existingMember;
+    }
+
+    // 기존 멤버가 없으면 새로 생성
     const member = new WorkspaceMember();
     member.workspaceId = workspaceId;
     member.userId = userId;
