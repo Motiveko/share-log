@@ -22,6 +22,7 @@ import {
   useWorkspaceInvitations,
   useCancelInvitation,
 } from "@web/features/invitation/hooks";
+import { modalService } from "@web/features/modal";
 
 interface PendingInvitationsSectionProps {
   workspaceId: number;
@@ -42,8 +43,12 @@ export function PendingInvitationsSection({
 
   const cancelMutation = useCancelInvitation(workspaceId);
 
-  const handleCancel = (invitationId: number) => {
-    if (!confirm("정말 이 초대를 취소하시겠습니까?")) return;
+  const handleCancel = async (invitationId: number) => {
+    const confirmed = await modalService.destructive(
+      "정말 이 초대를 취소하시겠습니까?",
+      { confirmText: "초대 취소" }
+    );
+    if (!confirmed) return;
     cancelMutation.mutate(invitationId);
   };
 

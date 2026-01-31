@@ -8,6 +8,7 @@ import { LoadingOverlay } from "@web/components/ui/loading";
 import { useAdjustmentStore } from "@web/features/adjustment/store";
 import { useAuthStore } from "@web/features/auth/store";
 import { AdjustmentListItem } from "@web/features/adjustment/components/adjustment-list-item";
+import { modalService } from "@web/features/modal";
 
 function AdjustmentListPage() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -24,7 +25,8 @@ function AdjustmentListPage() {
   }, [workspaceIdNum, fetchAdjustments]);
 
   const handleDelete = async (adjustmentId: number) => {
-    if (!confirm("정말 삭제하시겠습니까?")) return;
+    const confirmed = await modalService.destructive("정말 삭제하시겠습니까?");
+    if (!confirmed) return;
     await deleteAdjustment(workspaceIdNum, adjustmentId);
   };
 

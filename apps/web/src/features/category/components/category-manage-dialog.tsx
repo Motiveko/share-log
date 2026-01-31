@@ -12,6 +12,7 @@ import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
 import { useCategoryStore } from "@web/features/category/store";
 import type { LogCategory } from "@repo/interfaces";
+import { modalService } from "@web/features/modal";
 
 interface CategoryManageDialogProps {
   open: boolean;
@@ -76,7 +77,8 @@ export function CategoryManageDialog({
   };
 
   const handleDelete = async (categoryId: number) => {
-    if (!confirm("정말 삭제하시겠습니까?")) return;
+    const confirmed = await modalService.destructive("정말 삭제하시겠습니까?");
+    if (!confirmed) return;
     setIsSubmitting(true);
     try {
       await deleteCategory(workspaceId, categoryId);

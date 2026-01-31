@@ -7,6 +7,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AppRoutes from "@web/app/routes";
 import { preRenderSetup } from "@web/init";
+import { ModalProvider } from "@web/features/modal";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,6 +34,7 @@ if (el) {
           pauseOnFocusLoss
           limit={5}
         />
+        <ModalProvider />
       </BrowserRouter>
     </QueryClientProvider>
   );

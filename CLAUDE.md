@@ -108,10 +108,11 @@ docker compose -f infra/docker-compose-local.yml up -d
     /adjustment          # 정산 (store, adjustment-form, adjustment-list-item, adjustment-result-view)
     /notification-setting # 알림 설정 (store)
     /toast               # 토스트 알림 (toast-service, toast)
+    /modal               # 모달 서비스 (modal-service, modal-provider) - alert, confirm, destructive
     /theme               # 테마 (store)
 
   /components/ui         # 범용 UI 컴포넌트 (shadcn/ui 스타일)
-    button, input, label, card, dialog, select, tabs, table,
+    button, input, label, card, dialog, alert-dialog, select, tabs, table,
     date-picker, date-range-picker-modal, tooltip, switch, checkbox,
     form-field, spinner, loading, empty-state, error-state
 
@@ -227,6 +228,51 @@ Query Key 컨벤션:
 - `apps/web/src/components/ui/error-state.tsx`: 에러 상태 UI 컴포넌트
 - `apps/web/src/components/ui/loading.tsx`: 로딩 상태 UI 컴포넌트
 - `apps/web/src/components/ui/empty-state.tsx`: 빈 상태 UI 컴포넌트
+
+## Modal Service (Alert/Confirm)
+
+브라우저 native `confirm()`/`alert()` 대신 커스텀 모달을 사용한다.
+
+**기본 사용법:**
+```typescript
+import { modalService } from "@web/features/modal";
+
+// 확인 모달 (확인/취소 버튼)
+const confirmed = await modalService.confirm("정말 진행하시겠습니까?");
+if (!confirmed) return;
+
+// 알림 모달 (확인 버튼만)
+await modalService.alert("처리가 완료되었습니다.");
+
+// 위험 동작 확인 모달 (삭제 등 - 빨간 버튼)
+const confirmed = await modalService.destructive("정말 삭제하시겠습니까?");
+if (!confirmed) return;
+```
+
+**옵션:**
+```typescript
+interface ModalOptions {
+  title?: string;      // 모달 제목 (선택)
+  message: string;     // 모달 본문 (필수)
+  confirmText?: string; // 확인 버튼 텍스트 (기본: "확인", destructive는 "삭제")
+  cancelText?: string;  // 취소 버튼 텍스트 (기본: "취소")
+}
+
+// 옵션 사용 예시
+await modalService.confirm("정산을 완료하시겠습니까?", {
+  title: "정산 완료",
+  confirmText: "완료",
+});
+
+await modalService.destructive("정말 추방하시겠습니까?", {
+  confirmText: "추방",
+});
+```
+
+**모달 타입:**
+- `confirm`: 일반 확인 모달 (기본 버튼)
+- `alert`: 알림 모달 (확인 버튼만)
+- `destructive`: 위험 동작 확인 모달 (빨간 버튼)
 
 ## Infrastructure Services (Local)
 

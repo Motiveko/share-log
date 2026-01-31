@@ -26,6 +26,7 @@ import {
 } from "@web/components/ui/select";
 import { useWorkspaceStore } from "@web/features/workspace/store";
 import { cn } from "@web/lib/utils";
+import { modalService } from "@web/features/modal";
 
 interface MemberManagementSectionProps {
   workspaceId: number;
@@ -55,7 +56,11 @@ export function MemberManagementSection({
   };
 
   const handleExpel = async (userId: number, nickname: string) => {
-    if (!confirm(`정말 ${nickname}님을 추방하시겠습니까?`)) return;
+    const confirmed = await modalService.destructive(
+      `정말 ${nickname}님을 추방하시겠습니까?`,
+      { confirmText: "추방" }
+    );
+    if (!confirmed) return;
     setLoading(userId);
     try {
       await expelMember(workspaceId, userId);

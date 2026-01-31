@@ -10,6 +10,7 @@ import { useAuthStore } from "@web/features/auth/store";
 import { AdjustmentForm } from "@web/features/adjustment/components/adjustment-form";
 import { AdjustmentResultView } from "@web/features/adjustment/components/adjustment-result-view";
 import { AdjustmentStatus, type UpdateAdjustmentDto } from "@repo/interfaces";
+import { modalService } from "@web/features/modal";
 
 function AdjustmentDetailPage() {
   const { workspaceId, adjustmentId } = useParams<{
@@ -48,7 +49,8 @@ function AdjustmentDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("정말 삭제하시겠습니까?")) return;
+    const confirmed = await modalService.destructive("정말 삭제하시겠습니까?");
+    if (!confirmed) return;
     setIsProcessing(true);
     try {
       await deleteAdjustment(workspaceIdNum, adjustmentIdNum);
@@ -59,7 +61,11 @@ function AdjustmentDetailPage() {
   };
 
   const handleComplete = async () => {
-    if (!confirm("정산을 완료 처리하시겠습니까? 완료 후에는 수정할 수 없습니다.")) return;
+    const confirmed = await modalService.confirm(
+      "정산을 완료 처리하시겠습니까? 완료 후에는 수정할 수 없습니다.",
+      { title: "정산 완료", confirmText: "완료" }
+    );
+    if (!confirmed) return;
     setIsProcessing(true);
     try {
       await completeAdjustment(workspaceIdNum, adjustmentIdNum);

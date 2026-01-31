@@ -19,6 +19,7 @@ import { UserStatsTable } from "@web/features/stats/components/user-stats-table"
 import { CategoryManageDialog } from "@web/features/category/components/category-manage-dialog";
 import { MethodManageDialog } from "@web/features/method/components/method-manage-dialog";
 import { MemberRole, type LogWithRelations, type LogListQuery, type CreateLogDto, type UpdateLogDto } from "@repo/interfaces";
+import { modalService } from "@web/features/modal";
 
 function WorkspaceDashboardPage() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -71,7 +72,8 @@ function WorkspaceDashboardPage() {
   };
 
   const handleDeleteLog = async (logId: number) => {
-    if (!confirm("정말 삭제하시겠습니까?")) return;
+    const confirmed = await modalService.destructive("정말 삭제하시겠습니까?");
+    if (!confirmed) return;
     await deleteLog(workspaceIdNum, logId);
     void fetchStats(workspaceIdNum, filter);
   };

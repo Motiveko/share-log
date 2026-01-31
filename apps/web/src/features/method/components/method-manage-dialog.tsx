@@ -12,6 +12,7 @@ import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
 import { useMethodStore } from "@web/features/method/store";
 import type { LogMethod } from "@repo/interfaces";
+import { modalService } from "@web/features/modal";
 
 interface MethodManageDialogProps {
   open: boolean;
@@ -76,7 +77,8 @@ export function MethodManageDialog({
   };
 
   const handleDelete = async (methodId: number) => {
-    if (!confirm("정말 삭제하시겠습니까?")) return;
+    const confirmed = await modalService.destructive("정말 삭제하시겠습니까?");
+    if (!confirmed) return;
     setIsSubmitting(true);
     try {
       await deleteMethod(workspaceId, methodId);
