@@ -1,8 +1,11 @@
 import { Link, useParams } from "react-router";
 import { useEffect } from "react";
+import { Inbox } from "lucide-react";
 import { useWorkspaceStore } from "@web/features/workspace/store";
 import { cn } from "@web/lib/utils";
 import { Button } from "@web/components/ui/button";
+import { Loading } from "@web/components/ui/loading";
+import { EmptyState } from "@web/components/ui/empty-state";
 
 function Lnb() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -24,13 +27,15 @@ function Lnb() {
 
       <nav className="flex-1 overflow-y-auto p-2">
         {status === "loading" && (
-          <div className="p-4 text-center text-muted-foreground">로딩 중...</div>
+          <Loading message="로딩 중..." className="py-8" />
         )}
 
         {status === "success" && workspaces.length === 0 && (
-          <div className="p-4 text-center text-muted-foreground text-sm">
-            워크스페이스가 없습니다
-          </div>
+          <EmptyState
+            icon={Inbox}
+            title="워크스페이스가 없습니다"
+            className="py-8"
+          />
         )}
 
         <ul className="space-y-1">

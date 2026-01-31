@@ -3,6 +3,7 @@ import { IsEmail, IsIn } from "class-validator";
 import {
   Invitation as InvitationInterface,
   InvitationWithWorkspace,
+  WorkspaceInvitation,
   InvitationStatus,
   CreateInvitationDto as CreateInvitationDtoInterface,
   UpdateInvitationDto as UpdateInvitationDtoInterface,
@@ -149,4 +150,77 @@ export class CreateInvitationRequestDto implements CreateInvitationDtoInterface 
 export class UpdateInvitationRequestDto implements UpdateInvitationDtoInterface {
   @IsIn(["accepted", "rejected"], { message: "수락 또는 거절만 가능합니다." })
   action: "accepted" | "rejected";
+}
+
+export class WorkspaceInvitationDto implements WorkspaceInvitation {
+  @Expose()
+  id: number;
+
+  @Expose()
+  workspaceId: number;
+
+  @Expose()
+  inviterId: number;
+
+  @Expose()
+  inviteeEmail: string;
+
+  @Expose()
+  inviteeId?: number | null;
+
+  @Expose()
+  status: InvitationStatus;
+
+  @Expose()
+  createdAt: Date;
+
+  @Expose()
+  inviter: {
+    id: number;
+    email: string;
+    nickname?: string | null;
+    avatarUrl?: string;
+  };
+
+  @Expose()
+  invitee?: {
+    id: number;
+    email: string;
+    nickname?: string | null;
+    avatarUrl?: string;
+  } | null;
+
+  static fromEntity(entity: Invitation): WorkspaceInvitationDto {
+    const dto = new WorkspaceInvitationDto();
+    dto.id = entity.id;
+    dto.workspaceId = entity.workspaceId;
+    dto.inviterId = entity.inviterId;
+    dto.inviteeEmail = entity.inviteeEmail;
+    dto.inviteeId = entity.inviteeId;
+    dto.status = entity.status;
+    dto.createdAt = entity.createdAt;
+    dto.inviter = {
+      id: entity.inviter.id,
+      email: entity.inviter.email ?? "",
+      nickname: entity.inviter.nickname ?? null,
+      avatarUrl: entity.inviter.avatarUrl,
+    };
+    dto.invitee = entity.invitee
+      ? {
+          id: entity.invitee.id,
+          email: entity.invitee.email ?? "",
+          nickname: entity.invitee.nickname ?? null,
+          avatarUrl: entity.invitee.avatarUrl,
+        }
+      : null;
+    return dto;
+  }
+
+  static fromEntities(entities: Invitation[]): WorkspaceInvitationDto[] {
+    return entities.map((e) => WorkspaceInvitationDto.fromEntity(e));
+  }
+
+  toJSON() {
+    return instanceToPlain(this);
+  }
 }

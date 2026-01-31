@@ -1,5 +1,6 @@
 import { singleton } from "tsyringe";
 import { Adjustment, AdjustmentStatus } from "@repo/entities/adjustment";
+import { ERROR_CODES } from "@repo/interfaces";
 import { AdjustmentRepository } from "@api/features/adjustment/adjustment-repository";
 import { AdjustmentCalculator } from "@api/features/adjustment/adjustment-calculator";
 import { WorkspaceRepository } from "@api/features/workspace/workspace-repository";
@@ -37,7 +38,10 @@ export class AdjustmentService {
     const endDate = new Date(dto.endDate);
 
     if (startDate > endDate) {
-      throw new BadRequestError("시작일이 종료일보다 늦을 수 없습니다.");
+      throw new BadRequestError(
+        "시작일이 종료일보다 늦을 수 없습니다.",
+        ERROR_CODES.INVALID_DATE_RANGE
+      );
     }
 
     // 정산 결과 계산
@@ -84,7 +88,10 @@ export class AdjustmentService {
   async findById(workspaceId: number, adjustmentId: number): Promise<Adjustment> {
     const adjustment = await this.adjustmentRepository.findById(adjustmentId);
     if (!adjustment || adjustment.workspaceId !== workspaceId) {
-      throw new NotFoundError("정산을 찾을 수 없습니다.");
+      throw new NotFoundError(
+        "정산을 찾을 수 없습니다.",
+        ERROR_CODES.ADJUSTMENT_NOT_FOUND
+      );
     }
     return adjustment;
   }
@@ -100,15 +107,24 @@ export class AdjustmentService {
   ): Promise<Adjustment> {
     const adjustment = await this.adjustmentRepository.findById(adjustmentId);
     if (!adjustment || adjustment.workspaceId !== workspaceId) {
-      throw new NotFoundError("정산을 찾을 수 없습니다.");
+      throw new NotFoundError(
+        "정산을 찾을 수 없습니다.",
+        ERROR_CODES.ADJUSTMENT_NOT_FOUND
+      );
     }
 
     if (adjustment.creatorId !== userId) {
-      throw new ForbiddenError("본인이 생성한 정산만 수정할 수 있습니다.");
+      throw new ForbiddenError(
+        "본인이 생성한 정산만 수정할 수 있습니다.",
+        ERROR_CODES.NOT_ADJUSTMENT_CREATOR
+      );
     }
 
     if (adjustment.status !== AdjustmentStatus.CREATED) {
-      throw new BadRequestError("완료된 정산은 수정할 수 없습니다.");
+      throw new BadRequestError(
+        "완료된 정산은 수정할 수 없습니다.",
+        ERROR_CODES.CANNOT_MODIFY_COMPLETED_ADJUSTMENT
+      );
     }
 
     // 필드 업데이트
@@ -121,7 +137,10 @@ export class AdjustmentService {
 
     // 날짜 유효성 검사
     if (adjustment.startDate > adjustment.endDate) {
-      throw new BadRequestError("시작일이 종료일보다 늦을 수 없습니다.");
+      throw new BadRequestError(
+        "시작일이 종료일보다 늦을 수 없습니다.",
+        ERROR_CODES.INVALID_DATE_RANGE
+      );
     }
 
     // 정산 결과 재계산
@@ -149,15 +168,24 @@ export class AdjustmentService {
   ): Promise<Adjustment> {
     const adjustment = await this.adjustmentRepository.findById(adjustmentId);
     if (!adjustment || adjustment.workspaceId !== workspaceId) {
-      throw new NotFoundError("정산을 찾을 수 없습니다.");
+      throw new NotFoundError(
+        "정산을 찾을 수 없습니다.",
+        ERROR_CODES.ADJUSTMENT_NOT_FOUND
+      );
     }
 
     if (adjustment.creatorId !== userId) {
-      throw new ForbiddenError("본인이 생성한 정산만 완료 처리할 수 있습니다.");
+      throw new ForbiddenError(
+        "본인이 생성한 정산만 완료 처리할 수 있습니다.",
+        ERROR_CODES.NOT_ADJUSTMENT_CREATOR
+      );
     }
 
     if (adjustment.status === AdjustmentStatus.COMPLETED) {
-      throw new BadRequestError("이미 완료된 정산입니다.");
+      throw new BadRequestError(
+        "이미 완료된 정산입니다.",
+        ERROR_CODES.ADJUSTMENT_ALREADY_COMPLETED
+      );
     }
 
     adjustment.status = AdjustmentStatus.COMPLETED;
@@ -182,11 +210,17 @@ export class AdjustmentService {
   ): Promise<void> {
     const adjustment = await this.adjustmentRepository.findById(adjustmentId);
     if (!adjustment || adjustment.workspaceId !== workspaceId) {
-      throw new NotFoundError("정산을 찾을 수 없습니다.");
+      throw new NotFoundError(
+        "정산을 찾을 수 없습니다.",
+        ERROR_CODES.ADJUSTMENT_NOT_FOUND
+      );
     }
 
     if (adjustment.creatorId !== userId) {
-      throw new ForbiddenError("본인이 생성한 정산만 삭제할 수 있습니다.");
+      throw new ForbiddenError(
+        "본인이 생성한 정산만 삭제할 수 있습니다.",
+        ERROR_CODES.NOT_ADJUSTMENT_CREATOR
+      );
     }
 
     await this.adjustmentRepository.remove(adjustment);

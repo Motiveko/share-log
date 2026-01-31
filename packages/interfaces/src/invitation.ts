@@ -35,6 +35,28 @@ export interface InvitationWithWorkspace extends Invitation {
   };
 }
 
+export interface WorkspaceInvitation {
+  id: number;
+  workspaceId: number;
+  inviterId: number;
+  inviteeEmail: string;
+  inviteeId?: number | null;
+  status: InvitationStatus;
+  createdAt: Date;
+  inviter: {
+    id: number;
+    email: string;
+    nickname?: string | null;
+    avatarUrl?: string;
+  };
+  invitee?: {
+    id: number;
+    email: string;
+    nickname?: string | null;
+    avatarUrl?: string;
+  } | null;
+}
+
 // DTOs
 export interface CreateInvitationDto {
   inviteeEmail: string;

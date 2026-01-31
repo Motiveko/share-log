@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { Button } from "@web/components/ui/button";
 import { useAuthStore } from "@web/features/auth/store";
+import { NotificationPopover } from "@web/features/notification/components";
 
 function Header() {
   const { logout, user } = useAuthStore();
@@ -10,6 +11,7 @@ function Header() {
         ShareLog
       </Link>
       <div className="flex items-center gap-4">
+        <NotificationPopover />
         <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
           {user?.nickname || user?.email || "프로필"}
         </Link>

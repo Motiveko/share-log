@@ -7,10 +7,12 @@ import {
   CardTitle,
 } from "@web/components/ui/card";
 import { Button } from "@web/components/ui/button";
+import { Spinner } from "@web/components/ui/spinner";
 import { useInvitationStore } from "@web/features/invitation/store";
 import { useWorkspaceStore } from "@web/features/workspace/store";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
+import { getErrorMessage } from "@web/lib/error";
 
 export function InvitationList() {
   const navigate = useNavigate();
@@ -31,9 +33,7 @@ export function InvitationList() {
       await fetchWorkspaces();
       navigate(`/workspace/${workspaceId}`);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "초대 수락에 실패했습니다.";
-      toast.error(message);
+      toast.error(getErrorMessage(error));
     } finally {
       setProcessingId(null);
     }
@@ -45,9 +45,7 @@ export function InvitationList() {
       await rejectInvitation(id);
       toast.success("초대를 거절했습니다.");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "초대 거절에 실패했습니다.";
-      toast.error(message);
+      toast.error(getErrorMessage(error));
     } finally {
       setProcessingId(null);
     }
@@ -56,7 +54,7 @@ export function InvitationList() {
   if (status === "loading") {
     return (
       <div className="flex justify-center py-4">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <Spinner />
       </div>
     );
   }

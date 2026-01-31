@@ -18,7 +18,8 @@
     "./log-category": "./src/log-category.ts",
     "./log-method": "./src/log-method.ts",
     "./adjustment": "./src/adjustment.ts",
-    "./notification-setting": "./src/notification-setting.ts"
+    "./notification-setting": "./src/notification-setting.ts",
+    "./notification": "./src/notification.ts"
   },
   "dependencies": {
     "@types/jest": "^30.0.0",

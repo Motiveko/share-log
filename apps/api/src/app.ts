@@ -34,6 +34,7 @@ import { LogController } from "@api/features/log/log-controller";
 import { StatsController } from "@api/features/log/stats-controller";
 import { AdjustmentController } from "@api/features/adjustment/adjustment-controller";
 import { NotificationSettingController } from "@api/features/notification-setting/notification-setting-controller";
+import { NotificationController } from "@api/features/notification/notification-controller";
 import {
   requireWorkspaceMember,
   requireWorkspaceMaster,
@@ -64,6 +65,7 @@ class App {
   private statsController!: StatsController;
   private adjustmentController!: AdjustmentController;
   private notificationSettingController!: NotificationSettingController;
+  private notificationController!: NotificationController;
 
   constructor(
     private redisClient: RedisClient,
@@ -102,6 +104,7 @@ class App {
     this.notificationSettingController = container.resolve(
       NotificationSettingController
     );
+    this.notificationController = container.resolve(NotificationController);
   }
 
   mountRouter() {
@@ -316,6 +319,18 @@ class App {
       this.invitationController.create.bind(this.invitationController)
     );
     privateRoute.get(
+      "/v1/workspaces/:id/invitations",
+      requireWorkspaceMember,
+      this.invitationController.listWorkspaceInvitations.bind(
+        this.invitationController
+      )
+    );
+    privateRoute.delete(
+      "/v1/workspaces/:id/invitations/:invitationId",
+      requireWorkspaceMember,
+      this.invitationController.cancel.bind(this.invitationController)
+    );
+    privateRoute.get(
       "/v1/invitations",
       this.invitationController.listMyInvitations.bind(this.invitationController)
     );
@@ -443,6 +458,24 @@ class App {
       this.notificationSettingController.update.bind(
         this.notificationSettingController
       )
+    );
+
+    // Notification routes (in-app notifications)
+    privateRoute.get(
+      "/v1/notifications",
+      this.notificationController.list.bind(this.notificationController)
+    );
+    privateRoute.get(
+      "/v1/notifications/unread-exists",
+      this.notificationController.checkUnread.bind(this.notificationController)
+    );
+    privateRoute.patch(
+      "/v1/notifications/read-all",
+      this.notificationController.markAllAsRead.bind(this.notificationController)
+    );
+    privateRoute.patch(
+      "/v1/notifications/:id/read",
+      this.notificationController.markAsRead.bind(this.notificationController)
     );
 
     return privateRoute;

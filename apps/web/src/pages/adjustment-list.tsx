@@ -1,7 +1,10 @@
 import { useEffect } from "react";
 import { useParams, Link } from "react-router";
-import { Plus } from "lucide-react";
+import { Plus, Receipt } from "lucide-react";
 import { Button } from "@web/components/ui/button";
+import { Spinner } from "@web/components/ui/spinner";
+import { EmptyState } from "@web/components/ui/empty-state";
+import { LoadingOverlay } from "@web/components/ui/loading";
 import { useAdjustmentStore } from "@web/features/adjustment/store";
 import { useAuthStore } from "@web/features/auth/store";
 import { AdjustmentListItem } from "@web/features/adjustment/components/adjustment-list-item";
@@ -30,11 +33,7 @@ function AdjustmentListPage() {
   };
 
   if (status === "loading" && adjustments.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-muted-foreground">로딩 중...</p>
-      </div>
-    );
+    return <LoadingOverlay />;
   }
 
   return (
@@ -56,16 +55,19 @@ function AdjustmentListPage() {
       {/* List */}
       <div className="border rounded-lg">
         {adjustments.length === 0 ? (
-          <div className="p-8 text-center text-muted-foreground">
-            아직 정산 내역이 없습니다.
-            <br />
-            <Link
-              to={`/workspace/${workspaceIdNum}/adjustment/new`}
-              className="text-primary hover:underline"
-            >
-              새 정산을 시작해보세요.
-            </Link>
-          </div>
+          <EmptyState
+            icon={Receipt}
+            title="아직 정산 내역이 없습니다"
+            description="새 정산을 시작해보세요."
+            action={
+              <Button asChild>
+                <Link to={`/workspace/${workspaceIdNum}/adjustment/new`}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  새 정산
+                </Link>
+              </Button>
+            }
+          />
         ) : (
           <>
             {adjustments.map((adjustment) => (
@@ -89,7 +91,14 @@ function AdjustmentListPage() {
             onClick={handleLoadMore}
             disabled={status === "loading"}
           >
-            {status === "loading" ? "로딩 중..." : "더 보기"}
+            {status === "loading" ? (
+              <>
+                <Spinner size="sm" className="mr-2" />
+                로딩 중...
+              </>
+            ) : (
+              "더 보기"
+            )}
           </Button>
         </div>
       )}

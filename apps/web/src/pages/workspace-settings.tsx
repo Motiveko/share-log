@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router";
-import { ArrowLeft, UserPlus } from "lucide-react";
+import { ArrowLeft, UserPlus, AlertCircle } from "lucide-react";
 import { MemberRole } from "@repo/interfaces";
 import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
+import { LoadingOverlay } from "@web/components/ui/loading";
+import { EmptyState } from "@web/components/ui/empty-state";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +19,10 @@ import { useWorkspaceStore } from "@web/features/workspace/store";
 import { useAuthStore } from "@web/features/auth/store";
 import { useInvitationStore } from "@web/features/invitation/store";
 import { MemberManagementSection } from "@web/features/workspace-settings/components/member-management-section";
+import { PendingInvitationsSection } from "@web/features/workspace-settings/components/pending-invitations-section";
 import { CategoryMethodSection } from "@web/features/workspace-settings/components/category-method-section";
 import { NotificationSettingSection } from "@web/features/workspace-settings/components/notification-setting-section";
+import { getErrorMessage } from "@web/lib/error";
 
 function WorkspaceSettingsPage() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -56,29 +60,24 @@ function WorkspaceSettingsPage() {
       setInviteEmail("");
       setInviteDialogOpen(false);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "초대 전송에 실패했습니다.";
-      setInviteError(message);
+      setInviteError(getErrorMessage(error));
     } finally {
       setInviteLoading(false);
     }
   };
 
   if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-muted-foreground">로딩 중...</p>
-      </div>
-    );
+    return <LoadingOverlay />;
   }
 
   if (!currentWorkspace) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-muted-foreground">워크스페이스를 찾을 수 없습니다.</p>
-      </div>
+      <EmptyState
+        icon={AlertCircle}
+        title="워크스페이스를 찾을 수 없습니다"
+        description="요청하신 워크스페이스가 존재하지 않거나 접근 권한이 없습니다."
+        className="min-h-[60vh]"
+      />
     );
   }
 
@@ -147,6 +146,12 @@ function WorkspaceSettingsPage() {
         <MemberManagementSection
           workspaceId={workspaceIdNum}
           members={members}
+          currentUserId={user?.id ?? 0}
+          isMaster={isMaster}
+        />
+
+        <PendingInvitationsSection
+          workspaceId={workspaceIdNum}
           currentUserId={user?.id ?? 0}
           isMaster={isMaster}
         />

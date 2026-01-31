@@ -220,8 +220,8 @@
 
 ### 8.1 알림 설정 API
 
-- [ ] GET /workspaces/:id/notification-settings
-- [ ] PATCH /workspaces/:id/notification-settings
+- [x] GET /workspaces/:id/notification-settings
+- [x] PATCH /workspaces/:id/notification-settings
 
 ### 8.2 웹 푸시 알림
 
@@ -231,15 +231,15 @@
 
 ### 8.3 Slack 웹훅 연동
 
-- [ ] Slack 웹훅 메시지 포맷
-- [ ] 웹훅 발송 Worker 구현
+- [x] Slack 웹훅 메시지 포맷
+- [x] 웹훅 발송 Worker 구현
 
 ### 8.4 프론트엔드
 
-- [ ] 워크스페이스 설정 페이지 (/workspace/:id/setting)
-  - [ ] 카테고리/수단 관리 섹션
-  - [ ] 멤버 관리 섹션 (초대/추방/권한)
-  - [ ] 알림 설정 섹션
+- [x] 워크스페이스 설정 페이지 (/workspace/:id/setting)
+  - [x] 카테고리/수단 관리 섹션
+  - [x] 멤버 관리 섹션 (초대/추방/권한)
+  - [x] 알림 설정 섹션
 
 ### 8.5 초대 이메일 발송 (Phase 5에서 연기됨)
 
@@ -254,9 +254,9 @@
 ### 9.1 UI/UX 개선
 
 - [ ] 반응형 레이아웃 검토
-- [ ] 로딩 상태 UI
-- [ ] 에러 처리 UI
-- [ ] 빈 상태 UI
+- [x] 로딩 상태 UI
+- [x] 에러 처리 UI
+- [x] 빈 상태 UI
 
 ### 9.2 성능 최적화
 
@@ -266,17 +266,46 @@
 
 ### 9.3 에러 메시지 처리 개선
 
-- [ ] 서버: 에러 응답 바디에 에러 코드 추가 (예: `{ code: "DUPLICATE_NAME", message: "..." }`)
-- [ ] 클라이언트: 에러 코드별 사용자 친화적 메시지 매핑 (`@web/lib/error.ts`)
-- [ ] 공용 에러 코드 상수 정의 (`@repo/interfaces` 또는 `@repo/constants`)
+- [x] 서버: 에러 응답 바디에 에러 코드 추가 (예: `{ code: "DUPLICATE_NAME", message: "..." }`)
+- [x] 클라이언트: 에러 코드별 사용자 친화적 메시지 매핑 (`@web/lib/error.ts`)
+- [x] 공용 에러 코드 상수 정의 (`@repo/interfaces` 또는 `@repo/constants`)
 
-### 9.4 테스트
+### 9.4 알림 시스템 개선
+
+> 의존성: Phase 8 (알림)
+
+#### 9.4.1 백엔드
+
+- [ ] Notification Entity 생성
+  - id, userId, workspaceId, type, title, body, isRead, data(JSON), createdAt
+  - data에 landingUrl(PC/MW) 정보 포함 (확장성 고려)
+- [ ] Notification API 추가
+  - GET /notifications - 내 알림 목록 (커서 기반 페이지네이션, 무한 스크롤용)
+  - GET /notifications/unread-exists - 안 읽은 알림 존재 여부
+  - PATCH /notifications/:id/read - 읽음 처리
+  - PATCH /notifications/read-all - 모두 읽음 처리
+- [ ] Worker 수정: 알림 발송 시 DB에도 저장
+- [ ] 알림 자동 삭제 스케줄러 (일정 기간 후 삭제)
+
+#### 9.4.2 프론트엔드
+
+- [ ] Header에 알림 아이콘 추가
+- [ ] 안 읽은 알림 있으면 빨간 점 badge 표시
+- [ ] 알림 레이어 (Popover) 구현
+- [ ] 알림 목록 무한 스크롤 구현
+- [ ] 읽음/안읽음 상태 구분 UI
+- [ ] 알림 클릭 시 읽음 처리 및 landing URL로 이동
+- [ ] 모두 읽음 처리 버튼
+- [ ] 알림 store (Zustand)
+- [ ] 알림 API 클라이언트
+
+### 9.5 테스트
 
 - [ ] API 통합 테스트
 - [ ] 프론트엔드 컴포넌트 테스트
 - [ ] E2E 테스트 (주요 플로우)
 
-### 9.5 배포 준비
+### 9.6 배포 준비
 
 - [ ] 환경 변수 정리
 - [ ] CI/CD 파이프라인 구성

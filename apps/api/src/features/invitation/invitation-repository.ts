@@ -71,4 +71,18 @@ export class InvitationRepository extends Repository<Invitation> {
       order: { createdAt: "DESC" },
     });
   }
+
+  /**
+   * 워크스페이스의 PENDING 초대 목록 조회 (관계 포함)
+   */
+  findPendingByWorkspace(workspaceId: number) {
+    return this.find({
+      where: {
+        workspaceId,
+        status: InvitationStatus.PENDING,
+      },
+      relations: ["inviter", "invitee"],
+      order: { createdAt: "DESC" },
+    });
+  }
 }

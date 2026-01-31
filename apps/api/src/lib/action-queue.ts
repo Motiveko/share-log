@@ -23,18 +23,18 @@ export interface ActionEvent<T = unknown> {
   timestamp: Date;
 }
 
-export const ACTION_EVENT_QUEUE_NAME = "turborepo-api-action-events";
-
 @singleton()
 export class ActionQueuePublisher {
   // TODO : kafka 등으로 변경시 이 객체를 변경한다.
   private queue: Queue<ActionEvent>;
 
   constructor(private readonly requestLogger: RequestScopedLogger) {
+    const { REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, ACTION_EVENT_QUEUE_NAME } =
+      Config;
     const connection: ConnectionOptions = {
-      host: Config.REDIS_HOST,
-      port: Config.REDIS_PORT,
-      password: Config.REDIS_PASSWORD || undefined,
+      host: REDIS_HOST,
+      port: REDIS_PORT,
+      password: REDIS_PASSWORD || undefined,
     };
 
     this.queue = new Queue(ACTION_EVENT_QUEUE_NAME, { connection });

@@ -1,5 +1,6 @@
 import { singleton } from "tsyringe";
 import { LogMethod } from "@repo/entities/log-method";
+import { ERROR_CODES } from "@repo/interfaces";
 import { MethodRepository } from "@api/features/log/method-repository";
 import { NotFoundError } from "@api/errors/not-found";
 import { BadRequestError } from "@api/errors/bad-request";
@@ -26,7 +27,10 @@ export class MethodService {
       dto.name
     );
     if (existing) {
-      throw new BadRequestError("이미 동일한 이름의 수단이 존재합니다.");
+      throw new BadRequestError(
+        "이미 동일한 이름의 수단이 존재합니다.",
+        ERROR_CODES.DUPLICATE_METHOD_NAME
+      );
     }
 
     const method = new LogMethod();
@@ -60,7 +64,10 @@ export class MethodService {
   ): Promise<LogMethod> {
     const method = await this.methodRepository.findById(methodId);
     if (!method || method.workspaceId !== workspaceId) {
-      throw new NotFoundError("수단을 찾을 수 없습니다.");
+      throw new NotFoundError(
+        "수단을 찾을 수 없습니다.",
+        ERROR_CODES.METHOD_NOT_FOUND
+      );
     }
 
     // 이름 변경시 중복 체크
@@ -70,7 +77,10 @@ export class MethodService {
         dto.name
       );
       if (existing) {
-        throw new BadRequestError("이미 동일한 이름의 수단이 존재합니다.");
+        throw new BadRequestError(
+          "이미 동일한 이름의 수단이 존재합니다.",
+          ERROR_CODES.DUPLICATE_METHOD_NAME
+        );
       }
       method.name = dto.name;
     }
@@ -88,12 +98,18 @@ export class MethodService {
   async delete(workspaceId: number, methodId: number): Promise<void> {
     const method = await this.methodRepository.findById(methodId);
     if (!method || method.workspaceId !== workspaceId) {
-      throw new NotFoundError("수단을 찾을 수 없습니다.");
+      throw new NotFoundError(
+        "수단을 찾을 수 없습니다.",
+        ERROR_CODES.METHOD_NOT_FOUND
+      );
     }
 
     // 기본 수단은 삭제 불가
     if (method.defaultType) {
-      throw new BadRequestError("기본 수단은 삭제할 수 없습니다.");
+      throw new BadRequestError(
+        "기본 수단은 삭제할 수 없습니다.",
+        ERROR_CODES.CANNOT_DELETE_DEFAULT_METHOD
+      );
     }
 
     await this.methodRepository.remove(method);

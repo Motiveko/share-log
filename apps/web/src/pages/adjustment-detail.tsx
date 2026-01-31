@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import { ArrowLeft, Pencil, Trash2, CheckCircle } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@web/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@web/components/ui/card";
+import { LoadingOverlay } from "@web/components/ui/loading";
+import { EmptyState } from "@web/components/ui/empty-state";
 import { useAdjustmentStore } from "@web/features/adjustment/store";
 import { useAuthStore } from "@web/features/auth/store";
 import { AdjustmentForm } from "@web/features/adjustment/components/adjustment-form";
@@ -75,18 +77,26 @@ function AdjustmentDetailPage() {
   };
 
   if (detailStatus === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-muted-foreground">로딩 중...</p>
-      </div>
-    );
+    return <LoadingOverlay />;
   }
 
   if (!currentAdjustment) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-muted-foreground">정산을 찾을 수 없습니다.</p>
-      </div>
+      <EmptyState
+        icon={AlertCircle}
+        title="정산을 찾을 수 없습니다"
+        description="요청하신 정산이 존재하지 않거나 접근 권한이 없습니다."
+        action={
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/workspace/${workspaceIdNum}/adjustment`)}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            목록으로 돌아가기
+          </Button>
+        }
+        className="min-h-[60vh]"
+      />
     );
   }
 

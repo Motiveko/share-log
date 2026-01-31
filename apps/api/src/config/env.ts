@@ -54,6 +54,7 @@ export const Config = {
   VAPID_PUBLIC_KEY: getEnvVariable("VAPID_PUBLIC_KEY"),
   VAPID_PRIVATE_KEY: getEnvVariable("VAPID_PRIVATE_KEY"),
   VAPID_EMAIL: getEnvVariable("VAPID_EMAIL"),
+  ACTION_EVENT_QUEUE_NAME: getEnvVariable("ACTION_EVENT_QUEUE_NAME"),
   env,
   isTest: env === "test",
   isDevelopment: env === "development",

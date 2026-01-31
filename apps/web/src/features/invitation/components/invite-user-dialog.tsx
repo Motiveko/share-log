@@ -9,9 +9,11 @@ import {
 } from "@web/components/ui/dialog";
 import { Input } from "@web/components/ui/input";
 import { Button } from "@web/components/ui/button";
+import { Spinner } from "@web/components/ui/spinner";
 import { API } from "@web/api";
 import { cn } from "@web/lib/utils";
 import { toast } from "react-toastify";
+import { getErrorMessage } from "@web/lib/error";
 import type { SearchUser } from "@repo/interfaces";
 
 interface InviteUserDialogProps {
@@ -73,9 +75,7 @@ export function InviteUserDialog({
       setSearchQuery("");
       onInvited?.();
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "초대에 실패했습니다.";
-      toast.error(message);
+      toast.error(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +109,7 @@ export function InviteUserDialog({
             />
             {isSearching && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <Spinner size="sm" />
               </div>
             )}
           </div>

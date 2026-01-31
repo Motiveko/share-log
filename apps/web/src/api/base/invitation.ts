@@ -1,6 +1,7 @@
 import type {
   Invitation,
   InvitationWithWorkspace,
+  WorkspaceInvitation,
   InvitationStatus,
   CreateInvitationDto,
   UpdateInvitationDto,
@@ -47,6 +48,30 @@ const InvitationWithWorkspaceSchema: z.ZodType<InvitationWithWorkspace> =
     }),
   });
 
+const WorkspaceInvitationSchema: z.ZodType<WorkspaceInvitation> = z.object({
+  id: z.number(),
+  workspaceId: z.number(),
+  inviterId: z.number(),
+  inviteeEmail: z.string(),
+  inviteeId: z.number().nullish(),
+  status: InvitationStatusSchema,
+  createdAt: z.coerce.date(),
+  inviter: z.object({
+    id: z.number(),
+    email: z.string(),
+    nickname: z.string().nullish(),
+    avatarUrl: z.string().optional(),
+  }),
+  invitee: z
+    .object({
+      id: z.number(),
+      email: z.string(),
+      nickname: z.string().nullish(),
+      avatarUrl: z.string().optional(),
+    })
+    .nullish(),
+});
+
 // Response Schemas
 const CreateInvitationResponseSchema: z.ZodType<
   DataAndMessageResponse<Invitation>
@@ -63,6 +88,17 @@ const GetInvitationsResponseSchema: z.ZodType<
 });
 
 const UpdateInvitationResponseSchema: z.ZodType<MessageResponse> = z.object({
+  message: z.string(),
+});
+
+const GetWorkspaceInvitationsResponseSchema: z.ZodType<
+  DataAndMessageResponse<WorkspaceInvitation[]>
+> = z.object({
+  data: z.array(WorkspaceInvitationSchema),
+  message: z.string(),
+});
+
+const CancelInvitationResponseSchema: z.ZodType<MessageResponse> = z.object({
   message: z.string(),
 });
 
@@ -118,6 +154,30 @@ export const reject = async (invitationId: number) => {
   >(`/api/v1/invitations/${invitationId}`, {
     data,
     schema: UpdateInvitationResponseSchema,
+  });
+  return response;
+};
+
+/**
+ * 워크스페이스 PENDING 초대 목록 조회
+ */
+export const listWorkspaceInvitations = async (workspaceId: number) => {
+  const response = await baseHttpClient.get<
+    typeof GetWorkspaceInvitationsResponseSchema
+  >(`/api/v1/workspaces/${workspaceId}/invitations`, {
+    schema: GetWorkspaceInvitationsResponseSchema,
+  });
+  return response.data;
+};
+
+/**
+ * 초대 취소
+ */
+export const cancel = async (workspaceId: number, invitationId: number) => {
+  const response = await baseHttpClient.delete<
+    typeof CancelInvitationResponseSchema
+  >(`/api/v1/workspaces/${workspaceId}/invitations/${invitationId}`, {
+    schema: CancelInvitationResponseSchema,
   });
   return response;
 };

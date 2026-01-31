@@ -1,5 +1,8 @@
 import { useEffect, useRef, useCallback } from "react";
+import { FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@web/components/ui/card";
+import { Spinner } from "@web/components/ui/spinner";
+import { EmptyState } from "@web/components/ui/empty-state";
 import { LogListItem } from "@web/features/log/components/log-list-item";
 import { useLogStore } from "@web/features/log/store";
 import type { LogWithRelations, LogListQuery } from "@repo/interfaces";
@@ -66,9 +69,11 @@ export function LogList({
       </CardHeader>
       <CardContent className="p-0">
         {logs.length === 0 && status !== "loading" ? (
-          <div className="p-8 text-center text-muted-foreground">
-            등록된 기록이 없습니다.
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="등록된 기록이 없습니다"
+            description="새로운 기록을 추가해보세요."
+          />
         ) : (
           <div>
             {logs.map((log) => (
@@ -82,8 +87,8 @@ export function LogList({
             ))}
             <div ref={loadMoreRef} className="h-4" />
             {status === "loading" && (
-              <div className="p-4 text-center text-muted-foreground">
-                로딩 중...
+              <div className="flex justify-center py-4">
+                <Spinner />
               </div>
             )}
           </div>

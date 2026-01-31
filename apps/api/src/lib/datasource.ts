@@ -18,6 +18,8 @@ import { LogMethod } from "@repo/entities/log-method";
 import { Adjustment } from "@repo/entities/adjustment";
 // Settings
 import { NotificationSetting } from "@repo/entities/notification-setting";
+// Notification
+import { Notification } from "@repo/entities/notification";
 
 const entities = [
   // User & Auth
@@ -36,6 +38,8 @@ const entities = [
   Adjustment,
   // Settings
   NotificationSetting,
+  // Notification
+  Notification,
 ];
 
 @singleton()

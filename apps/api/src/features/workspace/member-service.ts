@@ -4,6 +4,7 @@ import {
   MemberRole,
   MemberStatus,
 } from "@repo/entities/workspace-member";
+import { ERROR_CODES } from "@repo/interfaces";
 import { MemberRepository } from "@api/features/workspace/member-repository";
 import { WorkspaceRepository } from "@api/features/workspace/workspace-repository";
 import { UserService } from "@api/features/user/service";
@@ -52,6 +53,17 @@ export class MemberService {
   }
 
   /**
+   * 해당 사용자가 워크스페이스의 MASTER인지 확인
+   */
+  async isMaster(workspaceId: number, userId: number): Promise<boolean> {
+    const member = await this.memberRepository.findAcceptedByWorkspaceAndUser(
+      workspaceId,
+      userId
+    );
+    return member !== null && member.role === MemberRole.MASTER;
+  }
+
+  /**
    * 새 멤버 생성
    */
   async createMember(
@@ -84,7 +96,10 @@ export class MemberService {
     );
 
     if (!member) {
-      throw new NotFoundError("멤버를 찾을 수 없습니다.");
+      throw new NotFoundError(
+        "멤버를 찾을 수 없습니다.",
+        ERROR_CODES.MEMBER_NOT_FOUND
+      );
     }
 
     // MASTER → MEMBER로 강등 시, 마지막 MASTER인지 확인
@@ -93,7 +108,8 @@ export class MemberService {
         await this.memberRepository.countMastersByWorkspace(workspaceId);
       if (masterCount <= 1) {
         throw new ForbiddenError(
-          "워크스페이스에는 최소 1명의 MASTER가 필요합니다."
+          "워크스페이스에는 최소 1명의 MASTER가 필요합니다.",
+          ERROR_CODES.LAST_MASTER_CANNOT_LEAVE
         );
       }
     }
@@ -123,7 +139,10 @@ export class MemberService {
   ) {
     // 자기 자신은 추방 불가
     if (targetUserId === requestUserId) {
-      throw new ForbiddenError("자기 자신을 추방할 수 없습니다.");
+      throw new ForbiddenError(
+        "자기 자신을 추방할 수 없습니다.",
+        ERROR_CODES.CANNOT_EXPEL_SELF
+      );
     }
 
     const member = await this.memberRepository.findAcceptedByWorkspaceAndUser(
@@ -132,7 +151,10 @@ export class MemberService {
     );
 
     if (!member) {
-      throw new NotFoundError("멤버를 찾을 수 없습니다.");
+      throw new NotFoundError(
+        "멤버를 찾을 수 없습니다.",
+        ERROR_CODES.MEMBER_NOT_FOUND
+      );
     }
 
     // MASTER 추방 시, 마지막 MASTER인지 확인
@@ -141,7 +163,8 @@ export class MemberService {
         await this.memberRepository.countMastersByWorkspace(workspaceId);
       if (masterCount <= 1) {
         throw new ForbiddenError(
-          "워크스페이스에는 최소 1명의 MASTER가 필요합니다."
+          "워크스페이스에는 최소 1명의 MASTER가 필요합니다.",
+          ERROR_CODES.LAST_MASTER_CANNOT_LEAVE
         );
       }
     }

@@ -1,5 +1,6 @@
 import { singleton } from "tsyringe";
 import { LogCategory } from "@repo/entities/log-category";
+import { ERROR_CODES } from "@repo/interfaces";
 import { CategoryRepository } from "@api/features/log/category-repository";
 import { NotFoundError } from "@api/errors/not-found";
 import { BadRequestError } from "@api/errors/bad-request";
@@ -22,7 +23,10 @@ export class CategoryService {
       dto.name
     );
     if (existing) {
-      throw new BadRequestError("이미 동일한 이름의 카테고리가 존재합니다.");
+      throw new BadRequestError(
+        "이미 동일한 이름의 카테고리가 존재합니다.",
+        ERROR_CODES.DUPLICATE_CATEGORY_NAME
+      );
     }
 
     const category = new LogCategory();
@@ -56,7 +60,10 @@ export class CategoryService {
   ): Promise<LogCategory> {
     const category = await this.categoryRepository.findById(categoryId);
     if (!category || category.workspaceId !== workspaceId) {
-      throw new NotFoundError("카테고리를 찾을 수 없습니다.");
+      throw new NotFoundError(
+        "카테고리를 찾을 수 없습니다.",
+        ERROR_CODES.CATEGORY_NOT_FOUND
+      );
     }
 
     // 이름 변경시 중복 체크
@@ -66,7 +73,10 @@ export class CategoryService {
         dto.name
       );
       if (existing) {
-        throw new BadRequestError("이미 동일한 이름의 카테고리가 존재합니다.");
+        throw new BadRequestError(
+          "이미 동일한 이름의 카테고리가 존재합니다.",
+          ERROR_CODES.DUPLICATE_CATEGORY_NAME
+        );
       }
       category.name = dto.name;
     }
@@ -84,7 +94,10 @@ export class CategoryService {
   async delete(workspaceId: number, categoryId: number): Promise<void> {
     const category = await this.categoryRepository.findById(categoryId);
     if (!category || category.workspaceId !== workspaceId) {
-      throw new NotFoundError("카테고리를 찾을 수 없습니다.");
+      throw new NotFoundError(
+        "카테고리를 찾을 수 없습니다.",
+        ERROR_CODES.CATEGORY_NOT_FOUND
+      );
     }
 
     await this.categoryRepository.remove(category);

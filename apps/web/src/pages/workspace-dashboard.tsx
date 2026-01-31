@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router";
-import { Plus, Settings } from "lucide-react";
+import { Plus, Settings, AlertCircle } from "lucide-react";
 import { Button } from "@web/components/ui/button";
+import { LoadingOverlay } from "@web/components/ui/loading";
+import { EmptyState } from "@web/components/ui/empty-state";
 import { useWorkspaceStore } from "@web/features/workspace/store";
 import { useLogStore } from "@web/features/log/store";
 import { useStatsStore } from "@web/features/stats/store";
@@ -80,18 +82,17 @@ function WorkspaceDashboardPage() {
   };
 
   if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-muted-foreground">로딩 중...</p>
-      </div>
-    );
+    return <LoadingOverlay />;
   }
 
   if (!currentWorkspace) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-muted-foreground">워크스페이스를 찾을 수 없습니다.</p>
-      </div>
+      <EmptyState
+        icon={AlertCircle}
+        title="워크스페이스를 찾을 수 없습니다"
+        description="요청하신 워크스페이스가 존재하지 않거나 접근 권한이 없습니다."
+        className="min-h-[60vh]"
+      />
     );
   }
 

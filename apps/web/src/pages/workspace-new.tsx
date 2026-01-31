@@ -6,6 +6,7 @@ import { useWorkspaceStore } from "@web/features/workspace/store";
 import WorkspaceForm from "@web/features/workspace/components/workspace-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@web/components/ui/card";
 import { logger } from "@web/lib/logger";
+import { getErrorMessage } from "@web/lib/error";
 import { addToast } from "@web/features/toast/toast-service";
 
 function WorkspaceNewPage() {
@@ -22,7 +23,7 @@ function WorkspaceNewPage() {
       navigate(`/workspace/${workspace.id}`);
     } catch (error) {
       logger.error(error);
-      addToast({ message: "워크스페이스 생성에 실패했습니다.", type: "error" });
+      addToast({ message: getErrorMessage(error), type: "error" });
     } finally {
       setIsLoading(false);
     }

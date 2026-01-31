@@ -7,6 +7,8 @@ import { PushService } from "@/push";
 import { SlackService } from "@/slack-service";
 import { MailService, InvitationEmailPayload } from "@/mail-service";
 import { NotificationResolver, NotificationRecipient } from "@/notification-resolver";
+import { NotificationRepository } from "@/repositories/notification-repository";
+import { LandingUrlBuilder } from "@/landing-url-builder";
 import {
   MessageBuilder,
   LogEventPayload,
@@ -58,7 +60,8 @@ export class NotificationEventWorker {
     private pushService: PushService,
     private slackService: SlackService,
     private mailService: MailService,
-    private notificationResolver: NotificationResolver
+    private notificationResolver: NotificationResolver,
+    private notificationRepository: NotificationRepository
   ) {}
 
   start(): void {
@@ -242,7 +245,7 @@ export class NotificationEventWorker {
   }
 
   /**
-   * 웹 푸시 및 Slack 알림 발송
+   * 웹 푸시 및 Slack 알림 발송 + 인앱 알림 저장
    */
   private async sendNotifications(
     workspaceId: number,
@@ -262,6 +265,38 @@ export class NotificationEventWorker {
       notificationType,
       payload
     );
+    const notificationData = LandingUrlBuilder.build(notificationType, payload);
+
+    // 인앱 알림 저장할 수신자 ID 수집 (웹푸시 + Slack 중복 제거)
+    const allRecipientIds = new Set<number>();
+    webPushRecipients.forEach((r) => allRecipientIds.add(r.userId));
+    slackRecipients.forEach((r) => allRecipientIds.add(r.userId));
+
+    // 인앱 알림 저장
+    if (allRecipientIds.size > 0) {
+      try {
+        await this.notificationRepository.createNotifications(
+          Array.from(allRecipientIds),
+          workspaceId,
+          notificationType,
+          pushMessage.title,
+          pushMessage.body,
+          notificationData
+        );
+        logger.info({
+          message: `Saved ${allRecipientIds.size} in-app notifications`,
+          notificationType,
+          workspaceId,
+        });
+      } catch (error) {
+        logger.error({
+          message: "Failed to save in-app notifications",
+          error,
+          notificationType,
+          workspaceId,
+        });
+      }
+    }
 
     // 웹 푸시 발송
     await Promise.all(

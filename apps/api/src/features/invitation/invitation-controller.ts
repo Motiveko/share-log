@@ -7,6 +7,7 @@ import {
   UpdateInvitationRequestDto,
   InvitationResponseDto,
   InvitationWithWorkspaceDto,
+  WorkspaceInvitationDto,
 } from "@api/features/invitation/dto";
 import type {
   AuthenticatedTypedRequest,
@@ -21,6 +22,11 @@ interface WorkspaceParams {
 
 interface InvitationParams {
   id: string;
+}
+
+interface WorkspaceInvitationParams {
+  id: string;
+  invitationId: string;
 }
 
 @singleton()
@@ -78,5 +84,32 @@ export class InvitationController {
       await this.invitationService.reject(invitationId, req.user.id);
       res.json({ message: "초대를 거절했습니다." });
     }
+  }
+
+  /**
+   * GET /v1/workspaces/:id/invitations - 워크스페이스 PENDING 초대 목록 조회
+   */
+  async listWorkspaceInvitations(
+    req: AuthenticatedTypedRequest<unknown, WorkspaceParams>,
+    res: TypedResponse<DataAndMessageResponse<WorkspaceInvitationDto[]>>
+  ) {
+    const workspaceId = parseInt(req.params.id, 10);
+    const invitations =
+      await this.invitationService.findPendingByWorkspace(workspaceId);
+    const dto = WorkspaceInvitationDto.fromEntities(invitations);
+    res.json({ message: "success", data: dto });
+  }
+
+  /**
+   * DELETE /v1/workspaces/:id/invitations/:invitationId - 초대 취소
+   */
+  async cancel(
+    req: AuthenticatedTypedRequest<unknown, WorkspaceInvitationParams>,
+    res: TypedResponse<MessageResponse>
+  ) {
+    const workspaceId = parseInt(req.params.id, 10);
+    const invitationId = parseInt(req.params.invitationId, 10);
+    await this.invitationService.cancel(invitationId, req.user.id, workspaceId);
+    res.json({ message: "초대가 취소되었습니다." });
   }
 }

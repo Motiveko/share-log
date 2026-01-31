@@ -3,6 +3,7 @@ import { singleton } from "tsyringe";
 import { DataSource as TypeOrmDataSource } from "typeorm";
 import { PushSubscription } from "@repo/entities/push-subscription";
 import { NotificationSetting } from "@repo/entities/notification-setting";
+import { Notification } from "@repo/entities/notification";
 import { User } from "@repo/entities/user";
 import { WorkspaceMember } from "@repo/entities/workspace-member";
 import { Workspace } from "@repo/entities/workspace";
@@ -22,6 +23,7 @@ export class DataSource extends TypeOrmDataSource {
       entities: [
         PushSubscription,
         NotificationSetting,
+        Notification,
         User,
         WorkspaceMember,
         Workspace,
