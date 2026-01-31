@@ -1,6 +1,7 @@
 import { toNumber } from "lodash";
 import { singleton } from "tsyringe";
 import { DataSource as TypeOrmDataSource } from "typeorm";
+import { AuthProvider } from "@repo/entities/auth-provider";
 import { PushSubscription } from "@repo/entities/push-subscription";
 import { NotificationSetting } from "@repo/entities/notification-setting";
 import { Notification } from "@repo/entities/notification";
@@ -21,6 +22,7 @@ export class DataSource extends TypeOrmDataSource {
       schema: Config.TYPEORM_SCHEMA,
       port: toNumber(Config.TYPEORM_PORT),
       entities: [
+        AuthProvider,
         PushSubscription,
         NotificationSetting,
         Notification,
