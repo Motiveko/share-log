@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { X, Mail, Clock } from "lucide-react";
 import type { WorkspaceInvitation } from "@repo/interfaces";
 import { Button } from "@web/components/ui/button";
@@ -19,8 +18,10 @@ import {
 } from "@web/components/ui/table";
 import { EmptyState } from "@web/components/ui/empty-state";
 import { Spinner } from "@web/components/ui/spinner";
-import { API } from "@web/api";
-import { getErrorMessage } from "@web/lib/error";
+import {
+  useWorkspaceInvitations,
+  useCancelInvitation,
+} from "@web/features/invitation/hooks";
 
 interface PendingInvitationsSectionProps {
   workspaceId: number;
@@ -33,40 +34,17 @@ export function PendingInvitationsSection({
   currentUserId,
   isMaster,
 }: PendingInvitationsSectionProps) {
-  const [invitations, setInvitations] = useState<WorkspaceInvitation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [cancelLoading, setCancelLoading] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: invitations = [],
+    isLoading,
+    error,
+  } = useWorkspaceInvitations(workspaceId);
 
-  const fetchInvitations = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await API.invitation.listWorkspaceInvitations(workspaceId);
-      setInvitations(data);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const cancelMutation = useCancelInvitation(workspaceId);
 
-  useEffect(() => {
-    void fetchInvitations();
-  }, [workspaceId]);
-
-  const handleCancel = async (invitationId: number) => {
+  const handleCancel = (invitationId: number) => {
     if (!confirm("정말 이 초대를 취소하시겠습니까?")) return;
-
-    setCancelLoading(invitationId);
-    try {
-      await API.invitation.cancel(workspaceId, invitationId);
-      setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setCancelLoading(null);
-    }
+    cancelMutation.mutate(invitationId);
   };
 
   const canCancel = (invitation: WorkspaceInvitation) => {
@@ -90,12 +68,14 @@ export function PendingInvitationsSection({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center py-8">
             <Spinner size="lg" />
           </div>
         ) : error ? (
-          <p className="text-sm text-destructive text-center py-4">{error}</p>
+          <p className="text-sm text-destructive text-center py-4">
+            초대 목록을 불러오는데 실패했습니다.
+          </p>
         ) : invitations.length === 0 ? (
           <EmptyState
             icon={Mail}
@@ -154,9 +134,9 @@ export function PendingInvitationsSection({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleCancel(invitation.id)}
-                        disabled={cancelLoading === invitation.id}
+                        disabled={cancelMutation.isPending}
                       >
-                        {cancelLoading === invitation.id ? (
+                        {cancelMutation.isPending ? (
                           <Spinner size="sm" />
                         ) : (
                           <X className="h-4 w-4 text-destructive" />

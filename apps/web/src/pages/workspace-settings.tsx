@@ -17,7 +17,7 @@ import {
 } from "@web/components/ui/dialog";
 import { useWorkspaceStore } from "@web/features/workspace/store";
 import { useAuthStore } from "@web/features/auth/store";
-import { useInvitationStore } from "@web/features/invitation/store";
+import { useCreateInvitation } from "@web/features/invitation/hooks";
 import { MemberManagementSection } from "@web/features/workspace-settings/components/member-management-section";
 import { PendingInvitationsSection } from "@web/features/workspace-settings/components/pending-invitations-section";
 import { CategoryMethodSection } from "@web/features/workspace-settings/components/category-method-section";
@@ -29,14 +29,14 @@ function WorkspaceSettingsPage() {
   const { currentWorkspace, fetchWorkspace, members, fetchMembers, status } =
     useWorkspaceStore();
   const { user } = useAuthStore();
-  const { createInvitation } = useInvitationStore();
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
 
   const workspaceIdNum = workspaceId ? parseInt(workspaceId, 10) : 0;
+
+  const createInvitationMutation = useCreateInvitation(workspaceIdNum);
 
   const isMaster = members.some(
     (m) => m.userId === user?.id && m.role === MemberRole.MASTER
@@ -49,21 +49,19 @@ function WorkspaceSettingsPage() {
     }
   }, [workspaceIdNum, fetchWorkspace, fetchMembers]);
 
-  const handleInvite = async () => {
+  const handleInvite = () => {
     if (!inviteEmail.trim()) return;
 
-    setInviteLoading(true);
     setInviteError(null);
-
-    try {
-      await createInvitation(workspaceIdNum, inviteEmail.trim());
-      setInviteEmail("");
-      setInviteDialogOpen(false);
-    } catch (error: unknown) {
-      setInviteError(getErrorMessage(error));
-    } finally {
-      setInviteLoading(false);
-    }
+    createInvitationMutation.mutate(inviteEmail.trim(), {
+      onSuccess: () => {
+        setInviteEmail("");
+        setInviteDialogOpen(false);
+      },
+      onError: (error: unknown) => {
+        setInviteError(getErrorMessage(error));
+      },
+    });
   };
 
   if (status === "loading") {
@@ -133,8 +131,8 @@ function WorkspaceSettingsPage() {
               >
                 취소
               </Button>
-              <Button onClick={handleInvite} disabled={inviteLoading}>
-                {inviteLoading ? "초대 중..." : "초대"}
+              <Button onClick={handleInvite} disabled={createInvitationMutation.isPending}>
+                {createInvitationMutation.isPending ? "초대 중..." : "초대"}
               </Button>
             </DialogFooter>
           </DialogContent>

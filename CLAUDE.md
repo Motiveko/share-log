@@ -163,6 +163,49 @@ docker compose -f infra/docker-compose-local.yml up -d
 - 컴포넌트명: PascalCase (`UserProfileCard`)
 - Feature 컴포넌트: `{Feature}{Role}` (예: `LogListItem`, `AdjustmentForm`)
 
+**Web Data Fetching Guidelines:**
+
+API 호출 및 로딩/에러 상태 관리는 TanStack Query(react-query)를 사용한다.
+
+역할 분리:
+- **TanStack Query**: 서버 상태 관리 (API 데이터 조회, 캐싱, 로딩/에러 상태)
+- **Zustand Store**: 클라이언트 상태 관리 (UI 상태, 필터, 모달 열림 등)
+
+기본 패턴:
+```typescript
+// 데이터 조회: useQuery
+const { data, isLoading, isError, error, refetch } = useQuery({
+  queryKey: ['logs', workspaceId, filter],
+  queryFn: () => API.log.list(workspaceId, filter),
+});
+
+// 데이터 변경: useMutation
+const createMutation = useMutation({
+  mutationFn: (dto: CreateLogDto) => API.log.create(workspaceId, dto),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['logs', workspaceId] });
+  },
+});
+```
+
+로딩/에러 상태 렌더링:
+```typescript
+if (isLoading) return <Loading />;
+if (isError) return <ErrorState error={error} onRetry={refetch} />;
+if (!data || data.length === 0) return <EmptyState />;
+return <DataList data={data} />;
+```
+
+Query Key 컨벤션:
+- 도메인 단위로 시작: `['logs', ...]`, `['workspaces', ...]`
+- 계층적 구조: `['logs', workspaceId]`, `['logs', workspaceId, logId]`
+- 필터/파라미터 포함: `['logs', workspaceId, { page, limit, ...filter }]`
+
+주의사항:
+- Zustand store에서 API 호출 및 로딩/에러 상태를 직접 관리하지 않는다
+- `isLoading`, `isError` 등 react-query가 제공하는 상태를 활용한다
+- 관련 쿼리 무효화는 `queryClient.invalidateQueries()`를 사용한다
+
 **Worker (`/apps/notification-worker`):**
 - BullMQ worker consuming jobs from Redis queue
 - Shares TypeORM entities with API
