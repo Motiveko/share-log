@@ -78,7 +78,7 @@ export class LandingUrlBuilder {
    */
   private static buildMemberLanding(workspaceId: number): NotificationData {
     return {
-      landingUrl: `${this.baseUrl}/workspace/${workspaceId}/setting`,
+      landingUrl: `${this.baseUrl}/workspace/${workspaceId}/settings`,
       entityType: "member",
     };
   }
