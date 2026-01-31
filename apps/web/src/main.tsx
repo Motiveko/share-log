@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@web/index.css";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import AppRoutes from "@web/app/routes";
 import { preRenderSetup } from "@web/init";
 
@@ -24,7 +25,14 @@ if (el) {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AppRoutes />
-        <ToastContainer draggable stacked />
+        <ToastContainer
+          draggable
+          newestOnTop
+          closeOnClick={false}
+          pauseOnHover
+          pauseOnFocusLoss
+          limit={5}
+        />
       </BrowserRouter>
     </QueryClientProvider>
   );

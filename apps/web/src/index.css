@@ -118,3 +118,147 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Toast container overrides */
+.Toastify__toast-container {
+  padding: 0;
+  width: auto;
+  max-width: 420px;
+}
+
+.Toastify__toast-container--top-right {
+  top: 1rem;
+  right: 1rem;
+}
+
+.Toastify__toast-container--top-left {
+  top: 1rem;
+  left: 1rem;
+}
+
+.Toastify__toast-container--top-center {
+  top: 1rem;
+}
+
+.Toastify__toast-container--bottom-right {
+  bottom: 1rem;
+  right: 1rem;
+}
+
+.Toastify__toast-container--bottom-left {
+  bottom: 1rem;
+  left: 1rem;
+}
+
+.Toastify__toast-container--bottom-center {
+  bottom: 1rem;
+}
+
+.Toastify__toast {
+  padding: 0;
+  margin-bottom: 0.5rem;
+  min-height: auto;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.Toastify__toast-body {
+  padding: 0;
+  margin: 0;
+}
+
+/* Toast animations */
+@keyframes toast-slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes toast-slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-slide-out-left {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes toast-slide-in-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-slide-in-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.Toastify__toast-container--top-right .Toastify__toast,
+.Toastify__toast-container--bottom-right .Toastify__toast {
+  animation: toast-slide-in-right 0.3s ease-out;
+}
+
+.Toastify__toast-container--top-left .Toastify__toast,
+.Toastify__toast-container--bottom-left .Toastify__toast {
+  animation: toast-slide-in-left 0.3s ease-out;
+}
+
+.Toastify__toast-container--top-center .Toastify__toast {
+  animation: toast-slide-in-down 0.3s ease-out;
+}
+
+.Toastify__toast-container--bottom-center .Toastify__toast {
+  animation: toast-slide-in-up 0.3s ease-out;
+}
+
+.Toastify__toast--exit.Toastify__toast-container--top-right,
+.Toastify__toast--exit.Toastify__toast-container--bottom-right {
+  animation: toast-slide-out-right 0.2s ease-in forwards;
+}
+
+.Toastify__toast--exit.Toastify__toast-container--top-left,
+.Toastify__toast--exit.Toastify__toast-container--bottom-left {
+  animation: toast-slide-out-left 0.2s ease-in forwards;
+}

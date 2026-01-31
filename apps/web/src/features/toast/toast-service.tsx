@@ -1,7 +1,7 @@
-import { toast } from "react-toastify";
+import { toast, Id } from "react-toastify";
 import Toast from "@web/features/toast/toast";
 
-const DEFAULT_DURATION = 3000;
+const DEFAULT_DURATION = 4000;
 
 export interface AddToastOptions {
   title?: string;
@@ -11,7 +11,7 @@ export interface AddToastOptions {
     label: string;
     onClick: () => void;
   };
-  duration?: number;
+  duration?: number | false;
   position?:
     | "top-left"
     | "top-right"
@@ -28,8 +28,8 @@ const addToast = ({
   action,
   duration = DEFAULT_DURATION,
   position = "top-right",
-}: AddToastOptions) => {
-  toast(
+}: AddToastOptions): Id => {
+  return toast(
     ({ closeToast }) => (
       <Toast
         action={action}
@@ -43,9 +43,29 @@ const addToast = ({
       autoClose: duration || false,
       position,
       hideProgressBar: true,
-      closeButton: true,
+      closeButton: false,
+      className: "!bg-transparent !shadow-none !p-0 !m-0",
     }
   );
 };
 
-export { addToast };
+// 편의 메서드
+const toastService = {
+  success: (message: string, options?: Omit<AddToastOptions, "type" | "message">) =>
+    addToast({ message, type: "success", ...options }),
+
+  error: (message: string, options?: Omit<AddToastOptions, "type" | "message">) =>
+    addToast({ message, type: "error", ...options }),
+
+  warning: (message: string, options?: Omit<AddToastOptions, "type" | "message">) =>
+    addToast({ message, type: "warning", ...options }),
+
+  info: (message: string, options?: Omit<AddToastOptions, "type" | "message">) =>
+    addToast({ message, type: "info", ...options }),
+
+  dismiss: (toastId?: Id) => toast.dismiss(toastId),
+
+  dismissAll: () => toast.dismiss(),
+};
+
+export { addToast, toastService };
