@@ -153,7 +153,6 @@ function WorkspaceDashboardPage() {
       <LogList
         workspaceId={workspaceIdNum}
         currentUserId={user?.id ?? 0}
-        filter={filter}
         onEdit={handleEditLog}
         onDelete={handleDeleteLog}
       />

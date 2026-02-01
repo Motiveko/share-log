@@ -5,12 +5,11 @@ import { Spinner } from "@web/components/ui/spinner";
 import { EmptyState } from "@web/components/ui/empty-state";
 import { LogListItem } from "@web/features/log/components/log-list-item";
 import { useLogStore } from "@web/features/log/store";
-import type { LogWithRelations, LogListQuery } from "@repo/interfaces";
+import type { LogWithRelations } from "@repo/interfaces";
 
 interface LogListProps {
   workspaceId: number;
   currentUserId: number;
-  filter?: LogListQuery;
   onEdit: (log: LogWithRelations) => void;
   onDelete: (logId: number) => void;
 }
@@ -18,17 +17,12 @@ interface LogListProps {
 export function LogList({
   workspaceId,
   currentUserId,
-  filter,
   onEdit,
   onDelete,
 }: LogListProps) {
-  const { logs, hasMore, status, fetchLogs, loadMore } = useLogStore();
+  const { logs, hasMore, status, loadMore } = useLogStore();
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    void fetchLogs(workspaceId, filter);
-  }, [workspaceId, filter, fetchLogs]);
 
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
