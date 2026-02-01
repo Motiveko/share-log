@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { ArrowLeft, Pencil, Trash2, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@web/components/ui/button";
+import { Badge } from "@web/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@web/components/ui/card";
 import { LoadingOverlay } from "@web/components/ui/loading";
 import { EmptyState } from "@web/components/ui/empty-state";
@@ -9,6 +10,7 @@ import { useAdjustmentStore } from "@web/features/adjustment/store";
 import { useAuthStore } from "@web/features/auth/store";
 import { AdjustmentForm } from "@web/features/adjustment/components/adjustment-form";
 import { AdjustmentResultView } from "@web/features/adjustment/components/adjustment-result-view";
+import { formatDateLong } from "@web/lib/format";
 import { AdjustmentStatus, type UpdateAdjustmentDto } from "@repo/interfaces";
 import { modalService } from "@web/features/modal";
 
@@ -74,14 +76,6 @@ function AdjustmentDetailPage() {
     }
   };
 
-  const formatDate = (date: Date): string => {
-    return new Intl.DateTimeFormat("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }).format(new Date(date));
-  };
-
   if (detailStatus === "loading") {
     return <LoadingOverlay />;
   }
@@ -121,19 +115,16 @@ function AdjustmentDetailPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">{currentAdjustment.name}</h1>
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full ${
-                  isCompleted
-                    ? "bg-green-100 text-green-700"
-                    : "bg-yellow-100 text-yellow-700"
-                }`}
+              <Badge
+                variant={isCompleted ? "success" : "warning"}
+                shape="pill"
               >
                 {isCompleted ? "완료" : "진행중"}
-              </span>
+              </Badge>
             </div>
             <p className="text-muted-foreground">
-              {formatDate(currentAdjustment.startDate)} ~{" "}
-              {formatDate(currentAdjustment.endDate)}
+              {formatDateLong(currentAdjustment.startDate)} ~{" "}
+              {formatDateLong(currentAdjustment.endDate)}
             </p>
           </div>
         </div>
@@ -201,13 +192,13 @@ function AdjustmentDetailPage() {
             </div>
             <div>
               <dt className="text-muted-foreground">생성일</dt>
-              <dd className="font-medium">{formatDate(currentAdjustment.createdAt)}</dd>
+              <dd className="font-medium">{formatDateLong(currentAdjustment.createdAt)}</dd>
             </div>
             {isCompleted && currentAdjustment.completedAt && (
               <div>
                 <dt className="text-muted-foreground">완료일</dt>
                 <dd className="font-medium">
-                  {formatDate(currentAdjustment.completedAt)}
+                  {formatDateLong(currentAdjustment.completedAt)}
                 </dd>
               </div>
             )}

@@ -96,7 +96,7 @@ export function LogFilter({ workspaceId, onFilterChange }: LogFilterProps) {
   };
 
   return (
-    <div className="flex flex-wrap gap-3 items-end">
+    <div className="flex flex-wrap gap-3 items-center">
       {/* Date Range Picker Button */}
       <Button
         variant="outline"
@@ -115,22 +115,22 @@ export function LogFilter({ workspaceId, onFilterChange }: LogFilterProps) {
       />
 
       <Select value={type} onValueChange={setType}>
-        <SelectTrigger className="w-28">
+        <SelectTrigger className="w-32">
           <SelectValue placeholder="유형" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL_VALUE}>전체</SelectItem>
+          <SelectItem value={ALL_VALUE}>유형: 전체</SelectItem>
           <SelectItem value="expense">지출</SelectItem>
           <SelectItem value="income">수입</SelectItem>
         </SelectContent>
       </Select>
 
       <Select value={userId} onValueChange={setUserId}>
-        <SelectTrigger className="w-32">
+        <SelectTrigger className="w-36">
           <SelectValue placeholder="사용자" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL_VALUE}>전체</SelectItem>
+          <SelectItem value={ALL_VALUE}>사용자: 전체</SelectItem>
           {members.map((member) => (
             <SelectItem key={member.userId} value={String(member.userId)}>
               {member.user.nickname || member.user.email}
@@ -140,11 +140,11 @@ export function LogFilter({ workspaceId, onFilterChange }: LogFilterProps) {
       </Select>
 
       <Select value={categoryId} onValueChange={setCategoryId}>
-        <SelectTrigger className="w-32">
+        <SelectTrigger className="w-40">
           <SelectValue placeholder="카테고리" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL_VALUE}>전체</SelectItem>
+          <SelectItem value={ALL_VALUE}>카테고리: 전체</SelectItem>
           {categories.map((cat) => (
             <SelectItem key={cat.id} value={String(cat.id)}>
               {cat.name}
@@ -154,11 +154,11 @@ export function LogFilter({ workspaceId, onFilterChange }: LogFilterProps) {
       </Select>
 
       <Select value={methodId} onValueChange={setMethodId}>
-        <SelectTrigger className="w-32">
+        <SelectTrigger className="w-36">
           <SelectValue placeholder="수단" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL_VALUE}>전체</SelectItem>
+          <SelectItem value={ALL_VALUE}>수단: 전체</SelectItem>
           {methods.map((method) => (
             <SelectItem key={method.id} value={String(method.id)}>
               {method.name}

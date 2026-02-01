@@ -7,18 +7,12 @@ import {
   TableRow,
 } from "@web/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@web/components/ui/card";
+import { formatCurrency } from "@web/lib/format";
 import type { UserStat } from "@repo/interfaces";
 
 interface UserStatsTableProps {
   data: UserStat[];
 }
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("ko-KR", {
-    style: "currency",
-    currency: "KRW",
-  }).format(amount);
-};
 
 export function UserStatsTable({ data }: UserStatsTableProps) {
   if (data.length === 0) {

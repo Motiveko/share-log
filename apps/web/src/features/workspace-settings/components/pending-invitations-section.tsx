@@ -23,6 +23,7 @@ import {
   useCancelInvitation,
 } from "@web/features/invitation/hooks";
 import { modalService } from "@web/features/modal";
+import { formatDateLong } from "@web/lib/format";
 
 interface PendingInvitationsSectionProps {
   workspaceId: number;
@@ -54,14 +55,6 @@ export function PendingInvitationsSection({
 
   const canCancel = (invitation: WorkspaceInvitation) => {
     return isMaster || invitation.inviterId === currentUserId;
-  };
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
   };
 
   return (
@@ -129,7 +122,7 @@ export function PendingInvitationsSection({
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Clock className="h-3 w-3" />
                       <span className="text-sm">
-                        {formatDate(invitation.createdAt)}
+                        {formatDateLong(invitation.createdAt)}
                       </span>
                     </div>
                   </TableCell>

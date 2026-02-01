@@ -10,6 +10,7 @@ import {
 } from "@web/components/ui/dialog";
 import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
+import { Badge } from "@web/components/ui/badge";
 import { useMethodStore } from "@web/features/method/store";
 import type { LogMethod } from "@repo/interfaces";
 import { modalService } from "@web/features/modal";
@@ -150,9 +151,7 @@ export function MethodManageDialog({
                     <div className="flex items-center gap-2">
                       <span>{method.name}</span>
                       {isDefaultMethod(method) && (
-                        <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                          기본
-                        </span>
+                        <Badge variant="muted">기본</Badge>
                       )}
                     </div>
                     <div className="flex gap-1">

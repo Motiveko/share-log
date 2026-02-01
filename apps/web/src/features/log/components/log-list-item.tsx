@@ -1,5 +1,7 @@
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@web/components/ui/button";
+import { Badge } from "@web/components/ui/badge";
+import { formatCurrency, formatDateShort } from "@web/lib/format";
 import type { LogWithRelations } from "@repo/interfaces";
 import { LogType } from "@repo/interfaces";
 
@@ -9,21 +11,6 @@ interface LogListItemProps {
   onEdit: (log: LogWithRelations) => void;
   onDelete: (logId: number) => void;
 }
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("ko-KR", {
-    style: "currency",
-    currency: "KRW",
-  }).format(amount);
-};
-
-const formatDate = (date: Date): string => {
-  return new Intl.DateTimeFormat("ko-KR", {
-    month: "short",
-    day: "numeric",
-    weekday: "short",
-  }).format(new Date(date));
-};
 
 export function LogListItem({
   log,
@@ -38,19 +25,13 @@ export function LogListItem({
     <div className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors">
       <div className="flex items-center gap-4">
         <div className="text-sm text-muted-foreground w-20">
-          {formatDate(log.date)}
+          {formatDateShort(log.date)}
         </div>
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <span
-              className={`text-xs px-2 py-0.5 rounded ${
-                isExpense
-                  ? "bg-red-100 text-red-700"
-                  : "bg-green-100 text-green-700"
-              }`}
-            >
+            <Badge variant={isExpense ? "expense" : "income"}>
               {isExpense ? "지출" : "수입"}
-            </span>
+            </Badge>
             {log.category && (
               <span className="text-xs text-muted-foreground">
                 {log.category.name}

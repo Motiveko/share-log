@@ -19,6 +19,7 @@ import {
 import { DatePicker } from "@web/components/ui/date-picker";
 import { useCategoryStore } from "@web/features/category/store";
 import { useMethodStore } from "@web/features/method/store";
+import { formatDateForInput } from "@web/lib/format";
 import type { LogWithRelations, CreateLogDto, UpdateLogDto } from "@repo/interfaces";
 import { LogType } from "@repo/interfaces";
 
@@ -31,11 +32,6 @@ interface LogFormDialogProps {
 }
 
 const NONE_VALUE = "none";
-
-const formatDateForInput = (date: Date): string => {
-  const d = new Date(date);
-  return d.toISOString().split("T")[0];
-};
 
 export function LogFormDialog({
   open,
@@ -67,7 +63,7 @@ export function LogFormDialog({
   useEffect(() => {
     if (log) {
       setType(log.type);
-      setAmount(String(log.amount));
+      setAmount(log.amount.toLocaleString());
       setDate(formatDateForInput(log.date));
       setMemo(log.memo || "");
       setCategoryId(log.categoryId ? String(log.categoryId) : NONE_VALUE);
@@ -89,7 +85,7 @@ export function LogFormDialog({
     try {
       const data: CreateLogDto | UpdateLogDto = {
         type,
-        amount: Number(amount),
+        amount: Number(amount.replace(/,/g, "")),
         date,
         memo: memo || undefined,
         categoryId: categoryId !== NONE_VALUE ? Number(categoryId) : undefined,
@@ -125,9 +121,15 @@ export function LogFormDialog({
           <div className="space-y-2">
             <Label>금액</Label>
             <Input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/,/g, "");
+                if (raw === "" || /^\d+$/.test(raw)) {
+                  setAmount(raw === "" ? "" : Number(raw).toLocaleString());
+                }
+              }}
               placeholder="금액을 입력하세요"
             />
           </div>

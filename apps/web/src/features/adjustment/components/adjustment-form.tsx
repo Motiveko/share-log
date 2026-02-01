@@ -6,6 +6,7 @@ import { DatePicker } from "@web/components/ui/date-picker";
 import { useCategoryStore } from "@web/features/category/store";
 import { useMethodStore } from "@web/features/method/store";
 import { useWorkspaceStore } from "@web/features/workspace/store";
+import { formatDateForInput } from "@web/lib/format";
 import type {
   AdjustmentWithCreator,
   CreateAdjustmentDto,
@@ -18,11 +19,6 @@ interface AdjustmentFormProps {
   onSubmit: (data: CreateAdjustmentDto | UpdateAdjustmentDto) => Promise<void>;
   onCancel?: () => void;
 }
-
-const formatDateForInput = (date: Date): string => {
-  const d = new Date(date);
-  return d.toISOString().split("T")[0];
-};
 
 const getDefaultStartDate = (): string => {
   const date = new Date();

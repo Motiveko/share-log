@@ -1,16 +1,10 @@
 import { Card, CardContent } from "@web/components/ui/card";
+import { formatCurrency } from "@web/lib/format";
 import type { StatsSummary } from "@repo/interfaces";
 
 interface LogSummaryProps {
   summary: StatsSummary;
 }
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("ko-KR", {
-    style: "currency",
-    currency: "KRW",
-  }).format(amount);
-};
 
 export function LogSummary({ summary }: LogSummaryProps) {
   return (

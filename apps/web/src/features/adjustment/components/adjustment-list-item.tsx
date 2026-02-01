@@ -1,6 +1,8 @@
 import { Link } from "react-router";
 import { Pencil, Trash2, CheckCircle } from "lucide-react";
 import { Button } from "@web/components/ui/button";
+import { Badge } from "@web/components/ui/badge";
+import { formatCurrency, formatDateRange } from "@web/lib/format";
 import type { AdjustmentWithCreator } from "@repo/interfaces";
 import { AdjustmentStatus } from "@repo/interfaces";
 
@@ -10,25 +12,6 @@ interface AdjustmentListItemProps {
   currentUserId: number;
   onDelete: (adjustmentId: number) => void;
 }
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("ko-KR", {
-    style: "currency",
-    currency: "KRW",
-  }).format(amount);
-};
-
-const formatDate = (date: Date): string => {
-  return new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(date));
-};
-
-const formatDateRange = (startDate: Date, endDate: Date): string => {
-  return `${formatDate(startDate)} ~ ${formatDate(endDate)}`;
-};
 
 export function AdjustmentListItem({
   adjustment,
@@ -51,15 +34,12 @@ export function AdjustmentListItem({
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-medium truncate">{adjustment.name}</span>
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full ${
-                  isCompleted
-                    ? "bg-green-100 text-green-700"
-                    : "bg-yellow-100 text-yellow-700"
-                }`}
+              <Badge
+                variant={isCompleted ? "success" : "warning"}
+                shape="pill"
               >
                 {isCompleted ? "완료" : "진행중"}
-              </span>
+              </Badge>
             </div>
             <div className="text-sm text-muted-foreground">
               {formatDateRange(adjustment.startDate, adjustment.endDate)}

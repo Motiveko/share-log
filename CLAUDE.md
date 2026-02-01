@@ -126,6 +126,7 @@ docker compose -f infra/docker-compose-local.yml up -d
 
   /routes                # 라우팅 가드
     protected-route, workspace-route
+    # 참고: 로그인 페이지(/pages/login.tsx)는 이미 로그인된 사용자를 홈으로 리다이렉트
 
   /lib                   # 유틸리티 (utils, http, error, logger)
 ```

@@ -1,17 +1,11 @@
 import { ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@web/components/ui/card";
+import { formatCurrency } from "@web/lib/format";
 import type { AdjustmentResult } from "@repo/interfaces";
 
 interface AdjustmentResultViewProps {
   result: AdjustmentResult;
 }
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("ko-KR", {
-    style: "currency",
-    currency: "KRW",
-  }).format(amount);
-};
 
 export function AdjustmentResultView({ result }: AdjustmentResultViewProps) {
   const { totalExpense, perPersonAmount, userExpenses, transfers } = result;
