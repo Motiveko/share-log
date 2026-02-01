@@ -2,6 +2,12 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router";
 import { Plus, Settings, AlertCircle } from "lucide-react";
 import { Button } from "@web/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@web/components/ui/dropdown-menu";
 import { LoadingOverlay } from "@web/components/ui/loading";
 import { EmptyState } from "@web/components/ui/empty-state";
 import { useWorkspaceStore } from "@web/features/workspace/store";
@@ -32,7 +38,6 @@ function WorkspaceDashboardPage() {
   const [editingLog, setEditingLog] = useState<LogWithRelations | null>(null);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [methodDialogOpen, setMethodDialogOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const workspaceIdNum = workspaceId ? parseInt(workspaceId, 10) : 0;
 
@@ -107,37 +112,22 @@ function WorkspaceDashboardPage() {
           <p className="text-muted-foreground">{currentWorkspace.memberCount}명의 멤버</p>
         </div>
         <div className="flex gap-2">
-          <div className="relative">
-            <Button
-              variant="outline"
-              onClick={() => setSettingsOpen(!settingsOpen)}
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              설정
-            </Button>
-            {settingsOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-background border rounded-md shadow-lg z-10">
-                <button
-                  className="w-full text-left px-4 py-2 hover:bg-muted"
-                  onClick={() => {
-                    setCategoryDialogOpen(true);
-                    setSettingsOpen(false);
-                  }}
-                >
-                  카테고리 관리
-                </button>
-                <button
-                  className="w-full text-left px-4 py-2 hover:bg-muted"
-                  onClick={() => {
-                    setMethodDialogOpen(true);
-                    setSettingsOpen(false);
-                  }}
-                >
-                  결제 수단 관리
-                </button>
-              </div>
-            )}
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Settings className="h-4 w-4 mr-2" />
+                설정
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => setCategoryDialogOpen(true)}>
+                카테고리 관리
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setMethodDialogOpen(true)}>
+                결제 수단 관리
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button onClick={handleOpenLogForm}>
             <Plus className="h-4 w-4 mr-2" />
             기록 추가
