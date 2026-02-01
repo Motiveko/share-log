@@ -1,10 +1,14 @@
-name: Deploy Notification Worker
+name: Deploy Share-Log Notification Worker
 
 on:
   workflow_dispatch:
 
 env:
-  NOTIFICATION_WORKER_IMAGE_NAME: ${{ github.repository }}/notification-worker
+  REPO_NAME: share-log
+  CONTAINER_NAME: share-log-notification-worker
+  APPS_NAME: notification-worker
+  PORT: 5052
+  NOTIFICATION_WORKER_IMAGE_NAME: ${{ github.repository }}/share-log-notification-worker
 
 jobs:
   deploy-notification-worker:
@@ -21,8 +25,8 @@ jobs:
 
       - name: Copy env file
         run: |
-          SOURCE=~/envs/turborepo-starter/apps/notification-worker/.env.production
-          DEST=./apps/notification-worker/.env.production
+          SOURCE=~/envs/${{ env.REPO_NAME }}/apps/${{ env.APPS_NAME }}/.env.production
+          DEST=./apps/${{ env.APPS_NAME }}/.env.production
 
           if [ ! -f "$SOURCE" ]; then
             echo "❌ Source env file not found: $SOURCE"
@@ -45,7 +49,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./apps/notification-worker/Dockerfile
+          file: ./apps/${{ env.APPS_NAME }}/Dockerfile
           push: false
           load: true
           tags: |
@@ -56,24 +60,24 @@ jobs:
 
       - name: Stop existing container (if running)
         run: |
-          if docker ps -a --format '{{.Names}}' | grep -q "^notification-worker$"; then
-            echo "Stopping and removing existing container: notification-worker"
-            docker stop notification-worker || true
-            docker rm notification-worker || true
+          if docker ps -a --format '{{.Names}}' | grep -q "^${{ env.CONTAINER_NAME }}$"; then
+            echo "Stopping and removing existing container: ${{ env.CONTAINER_NAME }}"
+            docker stop ${{ env.CONTAINER_NAME }} || true
+            docker rm ${{ env.CONTAINER_NAME }} || true
           fi
 
       - name: Cleanup env file
         if: always()
         run: |
-          rm -f ./apps/notification-worker/.env.production
+          rm -f ./apps/${{ env.APPS_NAME }}/.env.production
 
       - name: Run container
         run: |
           docker run -d \
             --network=docker_my-app-network \
-            --name notification-worker \
+            --name ${{ env.CONTAINER_NAME }} \
             --restart unless-stopped \
-            -p 5052:5052 \
+            -p ${{ env.PORT }}:${{ env.PORT }} \
             -v ~/logs:/app/logs \
             ${{ env.NOTIFICATION_WORKER_IMAGE_NAME }}:latest
 
@@ -91,9 +95,9 @@ jobs:
           echo "Waiting for container to be healthy..."
           sleep 5
 
-          if docker ps --filter "name=notification-worker" --filter "status=running" | grep -q notification-worker; then
-            echo "✅ Container notification-worker is running successfully!"
-            docker logs --tail 20 notification-worker
+          if docker ps --filter "name=${{ env.CONTAINER_NAME }}" --filter "status=running" | grep -q ${{ env.CONTAINER_NAME }}; then
+            echo "✅ Container ${{ env.CONTAINER_NAME }} is running successfully!"
+            docker logs --tail 20 ${{ env.CONTAINER_NAME }}
           else
             echo "❌ Container failed to start"
             docker logs notification-worker
