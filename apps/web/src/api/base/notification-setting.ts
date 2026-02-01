@@ -8,15 +8,7 @@ import { baseHttpClient } from "@web/api/http-client";
 import type { DataAndMessageResponse } from "@web/api/types";
 
 // Schemas
-const NotificationTypeSchema = z.enum([
-  "log_created",
-  "log_deleted",
-  "role_changed",
-  "adjustment_created",
-  "adjustment_completed",
-  "member_joined",
-  "member_left",
-]) as z.ZodType<NotificationType>;
+const NotificationTypeSchema = z.string() as z.ZodType<NotificationType>;
 
 const NotificationSettingSchema: z.ZodType<NotificationSettingResponse> =
   z.object({

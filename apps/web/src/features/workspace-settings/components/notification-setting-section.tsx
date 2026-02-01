@@ -12,6 +12,7 @@ import { Switch } from "@web/components/ui/switch";
 import { Checkbox } from "@web/components/ui/checkbox";
 import { Label } from "@web/components/ui/label";
 import { useNotificationSettingStore } from "@web/features/notification-setting/store";
+import { toastService } from "@web/features/toast/toast-service";
 import { cn } from "@web/lib/utils";
 
 interface NotificationSettingSectionProps {
@@ -46,8 +47,12 @@ export function NotificationSettingSection({
     setIsUpdating(true);
     try {
       await updateSetting(workspaceId, { webPushEnabled: checked });
+      toastService.success(
+        checked ? "웹 푸시 알림이 활성화되었습니다." : "웹 푸시 알림이 비활성화되었습니다."
+      );
     } catch (error) {
       console.error("Failed to update web push setting:", error);
+      toastService.error("웹 푸시 알림 설정 변경에 실패했습니다.");
     } finally {
       setIsUpdating(false);
     }
@@ -57,8 +62,12 @@ export function NotificationSettingSection({
     setIsUpdating(true);
     try {
       await updateSetting(workspaceId, { slackEnabled: checked });
+      toastService.success(
+        checked ? "Slack 알림이 활성화되었습니다." : "Slack 알림이 비활성화되었습니다."
+      );
     } catch (error) {
       console.error("Failed to update slack setting:", error);
+      toastService.error("Slack 알림 설정 변경에 실패했습니다.");
     } finally {
       setIsUpdating(false);
     }
@@ -74,8 +83,10 @@ export function NotificationSettingSection({
         : setting.enabledTypes.filter((t) => t !== type);
 
       await updateSetting(workspaceId, { enabledTypes: newTypes });
+      toastService.success("알림 유형이 변경되었습니다.");
     } catch (error) {
       console.error("Failed to update notification types:", error);
+      toastService.error("알림 유형 변경에 실패했습니다.");
     } finally {
       setIsUpdating(false);
     }
