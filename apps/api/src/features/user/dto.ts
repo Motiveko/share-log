@@ -109,7 +109,7 @@ export class PatchUserRequestDto implements PatchUserDtoInterface {
 
   @IsOptional()
   @IsString()
-  @IsUrl({}, { message: "유효한 URL 형식이어야 합니다." })
+  @IsUrl({ require_tld: false }, { message: "유효한 URL 형식이어야 합니다." })
   avatarUrl?: string;
 
   @IsOptional()

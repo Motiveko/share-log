@@ -1,6 +1,7 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useAuthStore } from "@web/features/auth/store";
 import { NotificationPopover } from "@web/features/notification/components";
+import { addToast } from "@web/features/toast/toast-service";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +12,13 @@ import {
 
 function Header() {
   const { logout, user } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    addToast({ message: "로그아웃 되었습니다.", type: "success" });
+    navigate("/login");
+  };
   return (
     <header className="h-14 flex items-center justify-between px-6 border-b bg-background shrink-0">
       <Link to="/" className="font-semibold text-lg">
@@ -41,7 +49,7 @@ function Header() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout} className="cursor-pointer">
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
               로그아웃
             </DropdownMenuItem>
           </DropdownMenuContent>

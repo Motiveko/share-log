@@ -10,6 +10,7 @@ type StateStatus = "idle" | "loading" | "success";
 interface AuthState {
   user: User | null;
   status: StateStatus;
+  isLogoutInProgress: boolean;
 }
 
 interface AuthActions {
@@ -26,6 +27,7 @@ export const useAuthStore = create<AuthStore>()(
     immer((set, get) => ({
       user: null,
       status: "idle",
+      isLogoutInProgress: false,
 
       updateStatus: (status: StateStatus) => {
         set((state) => {
@@ -52,6 +54,9 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       logout: async () => {
+        set((state) => {
+          state.isLogoutInProgress = true;
+        });
         get().updateStatus("loading");
         try {
           await API.user.logout();
@@ -63,6 +68,9 @@ export const useAuthStore = create<AuthStore>()(
           logger.error(error);
         } finally {
           get().updateStatus("idle");
+          set((state) => {
+            state.isLogoutInProgress = false;
+          });
         }
       },
     })),

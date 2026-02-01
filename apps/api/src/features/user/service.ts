@@ -3,11 +3,15 @@ import { User } from "@repo/entities/user";
 import { GoogleProfileDto } from "@api/features/user/google-profile-dto";
 import { LoginDto, PatchUserRequestDto } from "@api/features/user/dto";
 import { UserRepository } from "@api/features/user/repository";
+import { StorageService } from "@api/features/storage/service";
 import type { PatchUserDto } from "@repo/interfaces";
 
 @singleton()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly storageService: StorageService
+  ) {}
 
   async findOrCreate(profile: GoogleProfileDto) {
     // 1. 이메일로 사용자 조회
@@ -25,6 +29,19 @@ export class UserService {
 
     // 2. 사용자가 없으면 생성
     const user = profile.toEntity();
+
+    // 3. 신규 사용자의 경우 Google 아바타를 MinIO에 저장
+    if (profile.avatarUrl) {
+      const minioAvatarUrl =
+        await this.storageService.downloadAndUploadFromUrl(
+          profile.avatarUrl,
+          "avatars/user"
+        );
+      if (minioAvatarUrl) {
+        user.avatarUrl = minioAvatarUrl;
+      }
+    }
+
     await this.userRepository.save(user);
 
     return user;

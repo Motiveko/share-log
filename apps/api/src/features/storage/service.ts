@@ -2,6 +2,7 @@ import { singleton } from "tsyringe";
 import { Config } from "@api/config/env";
 import { toNumber } from "lodash";
 import * as Minio from "minio";
+import { Readable } from "stream";
 
 export interface MultipartUploadInitResult {
   uploadId: string;
@@ -144,6 +145,55 @@ export class StorageService {
       objectName,
       uploadId
     );
+  }
+
+  /**
+   * 외부 URL에서 이미지를 다운로드하여 MinIO에 업로드합니다.
+   * @param externalUrl - 다운로드할 외부 이미지 URL
+   * @param objectPrefix - MinIO 객체 이름의 prefix (예: "avatars/user-123")
+   * @returns MinIO에 저장된 이미지의 공개 URL, 실패 시 null
+   */
+  async downloadAndUploadFromUrl(
+    externalUrl: string,
+    objectPrefix: string
+  ): Promise<string | null> {
+    try {
+      const response = await fetch(externalUrl);
+      if (!response.ok) {
+        return null;
+      }
+
+      const contentType = response.headers.get("content-type") || "image/jpeg";
+      const extension = this.getExtensionFromContentType(contentType);
+      const objectName = this.withTimestamp(`${objectPrefix}${extension}`);
+      const bucketName = Config.MINIO_BUCKET_NAME;
+
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const stream = Readable.from(buffer);
+
+      await this.minioClient.putObject(
+        bucketName,
+        objectName,
+        stream,
+        buffer.length,
+        { "Content-Type": contentType }
+      );
+
+      return this.getPublicUrl(bucketName, objectName);
+    } catch {
+      return null;
+    }
+  }
+
+  private getExtensionFromContentType(contentType: string): string {
+    const mimeToExt: Record<string, string> = {
+      "image/jpeg": ".jpg",
+      "image/png": ".png",
+      "image/gif": ".gif",
+      "image/webp": ".webp",
+    };
+    return mimeToExt[contentType] || ".jpg";
   }
 
   private getPublicUrl(bucketName: string, objectName: string) {

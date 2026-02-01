@@ -12,12 +12,12 @@ import {
 } from "@web/components/ui/card";
 import { FormField } from "@web/components/ui/form-field";
 import { Button } from "@web/components/ui/button";
+import { ProfileImageEditor } from "@web/features/profile/components/profile-image-editor";
 
 function ProfilePage() {
   const navigate = useNavigate();
   const { user, updateUser, logout } = useAuthStore();
   const [nickname, setNickname] = useState(user?.nickname || "");
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || "");
   const [slackWebhookUrl, setSlackWebhookUrl] = useState(
     user?.slackWebhookUrl || ""
   );
@@ -42,10 +42,6 @@ function ProfilePage() {
       newErrors.nickname = "닉네임은 최소 2자 이상이어야 합니다.";
     }
 
-    if (avatarUrl && !isValidUrl(avatarUrl)) {
-      newErrors.avatarUrl = "유효한 URL 형식이어야 합니다.";
-    }
-
     if (slackWebhookUrl && !isValidUrl(slackWebhookUrl)) {
       newErrors.slackWebhookUrl = "유효한 URL 형식이어야 합니다.";
     }
@@ -65,7 +61,6 @@ function ProfilePage() {
     try {
       const updatedUser = await API.user.patch({
         nickname,
-        avatarUrl: avatarUrl || undefined,
         slackWebhookUrl: slackWebhookUrl || undefined,
       });
       updateUser(updatedUser);
@@ -74,6 +69,15 @@ function ProfilePage() {
       toastService.error("프로필 수정에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleAvatarUpload = async (avatarUrl: string) => {
+    try {
+      const updatedUser = await API.user.patch({ avatarUrl });
+      updateUser(updatedUser);
+    } catch {
+      toastService.error("프로필 이미지 저장에 실패했습니다.");
     }
   };
 
@@ -100,40 +104,42 @@ function ProfilePage() {
           <CardDescription>{user?.email}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <FormField
-              label="닉네임"
-              required
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              placeholder="닉네임을 입력하세요"
-              minLength={2}
-              disabled={isSubmitting}
-              error={errors.nickname}
-            />
-            <FormField
-              label="아바타 URL"
-              type="url"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="https://example.com/avatar.png"
-              disabled={isSubmitting}
-              error={errors.avatarUrl}
-            />
-            <FormField
-              label="Slack 웹훅 URL"
-              type="url"
-              value={slackWebhookUrl}
-              onChange={(e) => setSlackWebhookUrl(e.target.value)}
-              placeholder="https://hooks.slack.com/services/..."
-              disabled={isSubmitting}
-              error={errors.slackWebhookUrl}
-              hint="알림을 받을 Slack 채널의 웹훅 URL을 입력하세요."
-            />
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting ? "저장 중..." : "저장"}
-            </Button>
-          </form>
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-sm font-medium">프로필 이미지</span>
+              <ProfileImageEditor
+                currentAvatarUrl={user?.avatarUrl}
+                onUploadComplete={handleAvatarUpload}
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <FormField
+                label="닉네임"
+                required
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                placeholder="닉네임을 입력하세요"
+                minLength={2}
+                disabled={isSubmitting}
+                error={errors.nickname}
+              />
+              <FormField
+                label="Slack 웹훅 URL"
+                type="url"
+                value={slackWebhookUrl}
+                onChange={(e) => setSlackWebhookUrl(e.target.value)}
+                placeholder="https://hooks.slack.com/services/..."
+                disabled={isSubmitting}
+                error={errors.slackWebhookUrl}
+                hint="알림을 받을 Slack 채널의 웹훅 URL을 입력하세요."
+              />
+              <Button type="submit" disabled={isSubmitting} className="w-full">
+                {isSubmitting ? "저장 중..." : "저장"}
+              </Button>
+            </form>
+          </div>
         </CardContent>
       </Card>
 
