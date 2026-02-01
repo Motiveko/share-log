@@ -41,18 +41,18 @@ export class Log {
   // 카테고리
   @ManyToOne(() => LogCategory, { nullable: true, onDelete: "SET NULL" })
   @JoinColumn({ name: "categoryId" })
-  category?: LogCategory;
+  category?: LogCategory | null;
 
   @Column({ nullable: true })
-  categoryId?: number;
+  categoryId?: number | null;
 
   // 결제 수단
   @ManyToOne(() => LogMethod, { nullable: true, onDelete: "SET NULL" })
   @JoinColumn({ name: "methodId" })
-  method?: LogMethod;
+  method?: LogMethod | null;
 
   @Column({ nullable: true })
-  methodId?: number;
+  methodId?: number | null;
 
   // 날짜
   @Column({ type: "date" })
@@ -64,7 +64,7 @@ export class Log {
 
   // 메모
   @Column({ nullable: true, type: "text" })
-  memo?: string;
+  memo?: string | null;
 
   // 작성자
   @ManyToOne(() => User, { onDelete: "CASCADE" })

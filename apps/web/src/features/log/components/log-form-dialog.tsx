@@ -88,8 +88,8 @@ export function LogFormDialog({
         amount: Number(amount.replace(/,/g, "")),
         date,
         memo: memo || undefined,
-        categoryId: categoryId !== NONE_VALUE ? Number(categoryId) : undefined,
-        methodId: methodId !== NONE_VALUE ? Number(methodId) : undefined,
+        categoryId: categoryId !== NONE_VALUE ? Number(categoryId) : null,
+        methodId: methodId !== NONE_VALUE ? Number(methodId) : null,
       };
       await onSubmit(data);
       onOpenChange(false);

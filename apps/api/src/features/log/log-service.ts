@@ -86,9 +86,15 @@ export class LogService {
     if (dto.type !== undefined) log.type = dto.type;
     if (dto.amount !== undefined) log.amount = dto.amount;
     if (dto.date !== undefined) log.date = new Date(dto.date);
-    if (dto.memo !== undefined) log.memo = dto.memo ?? undefined;
-    if (dto.categoryId !== undefined) log.categoryId = dto.categoryId ?? undefined;
-    if (dto.methodId !== undefined) log.methodId = dto.methodId ?? undefined;
+    if (dto.memo !== undefined) log.memo = dto.memo ?? null;
+    if (dto.categoryId !== undefined) {
+      log.categoryId = dto.categoryId ?? null;
+      log.category = undefined; // 관계 객체 초기화 (TypeORM이 categoryId를 기준으로 저장하도록)
+    }
+    if (dto.methodId !== undefined) {
+      log.methodId = dto.methodId ?? null;
+      log.method = undefined; // 관계 객체 초기화 (TypeORM이 methodId를 기준으로 저장하도록)
+    }
 
     const saved = await this.logRepository.save(log);
     return this.logRepository.findById(saved.id) as Promise<Log>;
