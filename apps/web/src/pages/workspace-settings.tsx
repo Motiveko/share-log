@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router";
-import { ArrowLeft, UserPlus, AlertCircle } from "lucide-react";
+import { ArrowLeft, UserPlus, AlertCircle, Settings, Pencil, Check, X } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
 import { MemberRole } from "@repo/interfaces";
 import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
@@ -15,9 +16,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@web/components/ui/dialog";
+import { API } from "@web/api";
 import { useWorkspaceStore } from "@web/features/workspace/store";
 import { useAuthStore } from "@web/features/auth/store";
 import { useCreateInvitation } from "@web/features/invitation/hooks";
+import { toastService } from "@web/features/toast/toast-service";
 import { MemberManagementSection } from "@web/features/workspace-settings/components/member-management-section";
 import { PendingInvitationsSection } from "@web/features/workspace-settings/components/pending-invitations-section";
 import { CategoryMethodSection } from "@web/features/workspace-settings/components/category-method-section";
@@ -27,21 +30,61 @@ import { getErrorMessage } from "@web/lib/error";
 
 function WorkspaceSettingsPage() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
-  const { currentWorkspace, fetchWorkspace, members, fetchMembers, currentWorkspaceStatus } =
+  const { currentWorkspace, fetchWorkspace, fetchWorkspaces, members, fetchMembers, currentWorkspaceStatus, setCurrentWorkspace } =
     useWorkspaceStore();
   const { user } = useAuthStore();
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editName, setEditName] = useState("");
 
   const workspaceIdNum = workspaceId ? parseInt(workspaceId, 10) : 0;
 
   const createInvitationMutation = useCreateInvitation(workspaceIdNum);
 
+  const updateNameMutation = useMutation({
+    mutationFn: (newName: string) =>
+      API.workspace.update(workspaceIdNum, { name: newName }),
+    onSuccess: (updatedWorkspace) => {
+      toastService.success("워크스페이스 이름이 변경되었습니다.");
+      if (currentWorkspace) {
+        setCurrentWorkspace({
+          ...currentWorkspace,
+          name: updatedWorkspace.name,
+        });
+      }
+      void fetchWorkspaces();
+      setIsEditingName(false);
+    },
+    onError: (error) => {
+      toastService.error(getErrorMessage(error));
+    },
+  });
+
   const isMaster = members.some(
     (m) => m.userId === user?.id && m.role === MemberRole.MASTER
   );
+
+  const handleStartEdit = () => {
+    setEditName(currentWorkspace?.name ?? "");
+    setIsEditingName(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingName(false);
+    setEditName("");
+  };
+
+  const handleSaveName = () => {
+    const trimmedName = editName.trim();
+    if (!trimmedName || trimmedName === currentWorkspace?.name) {
+      handleCancelEdit();
+      return;
+    }
+    updateNameMutation.mutate(trimmedName);
+  };
 
   useEffect(() => {
     if (workspaceIdNum) {
@@ -92,7 +135,54 @@ function WorkspaceSettingsPage() {
             </Link>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">{currentWorkspace.name} 설정</h1>
+            <div className="flex items-center gap-2">
+              <Settings className="h-5 w-5 text-muted-foreground" />
+              {isEditingName ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveName();
+                      if (e.key === "Escape") handleCancelEdit();
+                    }}
+                    className="h-8 text-xl font-bold w-64"
+                    autoFocus
+                    disabled={updateNameMutation.isPending}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSaveName}
+                    disabled={updateNameMutation.isPending}
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancelEdit}
+                    disabled={updateNameMutation.isPending}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold">{currentWorkspace.name}</h1>
+                  {isMaster && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleStartEdit}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
             <p className="text-muted-foreground">
               워크스페이스 설정을 관리합니다.
             </p>
