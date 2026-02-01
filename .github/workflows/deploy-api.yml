@@ -73,7 +73,7 @@ jobs:
             --network=docker_my-app-network \
             --name api \
             --restart unless-stopped \
-            -p 5001:5001 \
+            -p 5051:5051 \
             -v ~/logs:/app/logs \
             ${{ env.API_IMAGE_NAME }}:latest
 

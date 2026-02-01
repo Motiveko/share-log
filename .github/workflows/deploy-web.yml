@@ -73,7 +73,7 @@ jobs:
             --network=docker_my-app-network \
             --name web \
             --restart unless-stopped \
-            -p 4321:4321 \
+            -p 5050:5050 \
             -v ~/logs:/app/logs \
             ${{ env.WEB_IMAGE_NAME }}:latest
 
