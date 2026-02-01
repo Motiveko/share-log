@@ -40,6 +40,6 @@ USER appuser
 # 환경변수 설정 (dotenv가 .env.production을 로드하도록)
 ENV PHASE=production
 
-EXPOSE 5001
+EXPOSE 5051
 
 CMD ["node", "dist/index.js"]

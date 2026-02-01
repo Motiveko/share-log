@@ -40,6 +40,6 @@ RUN addgroup --system --gid 1001 nodejs && \
     chown -R appuser:nodejs /app/logs
 USER appuser
 
-EXPOSE 4321
+EXPOSE 5050
 
 CMD ["node", "dist/server/index.js"]

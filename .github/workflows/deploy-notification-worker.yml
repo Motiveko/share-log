@@ -73,7 +73,7 @@ jobs:
             --network=docker_my-app-network \
             --name notification-worker \
             --restart unless-stopped \
-            -p 5002:5001 \
+            -p 5052:5052 \
             -v ~/logs:/app/logs \
             ${{ env.NOTIFICATION_WORKER_IMAGE_NAME }}:latest
 
@@ -99,4 +99,3 @@ jobs:
             docker logs notification-worker
             exit 1
           fi
-
