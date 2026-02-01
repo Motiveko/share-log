@@ -14,6 +14,7 @@ import {
   LogEventPayload,
   AdjustmentEventPayload,
   MemberEventPayload,
+  WorkspaceDeletedEventPayload,
   WorkspaceEventPayload,
 } from "@/message-builder";
 
@@ -27,7 +28,8 @@ export type NotificationEventType =
   | "member.joined"
   | "member.left"
   | "member.role_changed"
-  | "invitation.created";
+  | "invitation.created"
+  | "workspace.deleted";
 
 export type ActionEventType = "created" | "updated" | "deleted" | "completed";
 
@@ -128,6 +130,11 @@ export class NotificationEventWorker {
         // Invitation events - email
         case "invitation.created":
           await this.handleInvitationCreated(payload);
+          break;
+
+        // Workspace events
+        case "workspace.deleted":
+          await this.handleWorkspaceDeleted(payload);
           break;
 
         default:
@@ -241,6 +248,37 @@ export class NotificationEventWorker {
       workspaceName,
       inviterNickname,
       inviterEmail,
+    });
+  }
+
+  /**
+   * 워크스페이스 삭제 알림 처리
+   * - 워크스페이스 삭제 후에는 NotificationSetting이 CASCADE 삭제되므로
+   *   NotificationResolver를 사용할 수 없음
+   * - payload의 recipientIds로 직접 웹 푸시 발송
+   * - 인앱 알림은 workspaceId가 필수이므로 저장하지 않음
+   */
+  private async handleWorkspaceDeleted(
+    payload: WorkspaceDeletedEventPayload
+  ): Promise<void> {
+    const { workspaceName, recipientIds } = payload;
+
+    const pushMessage = MessageBuilder.build(
+      NotificationType.WORKSPACE_DELETED,
+      payload
+    );
+
+    // 웹 푸시 발송 (recipientIds로 직접 발송)
+    await Promise.all(
+      recipientIds.map((userId) =>
+        this.pushService.sendToUser(userId, pushMessage)
+      )
+    );
+
+    logger.info({
+      message: `Sent workspace deleted notifications`,
+      workspaceName,
+      recipientCount: recipientIds.length,
     });
   }
 

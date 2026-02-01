@@ -26,6 +26,7 @@ const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   [NotificationType.MEMBER_JOINED]: "멤버 참여",
   [NotificationType.MEMBER_LEFT]: "멤버 탈퇴",
   [NotificationType.ROLE_CHANGED]: "권한 변경",
+  [NotificationType.WORKSPACE_DELETED]: "워크스페이스 삭제",
 };
 
 export function NotificationSettingSection({

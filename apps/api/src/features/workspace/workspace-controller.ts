@@ -88,7 +88,7 @@ export class WorkspaceController {
     res: TypedResponse<MessageResponse>
   ) {
     const workspaceId = parseInt(req.params.id, 10);
-    await this.workspaceService.delete(workspaceId);
+    await this.workspaceService.delete(workspaceId, req.user.id);
     res.json({ message: "워크스페이스가 삭제되었습니다." });
   }
 

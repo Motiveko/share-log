@@ -20,6 +20,7 @@ export enum NotificationType {
   ADJUSTMENT_COMPLETED = "adjustment_completed", // 정산 완료
   MEMBER_JOINED = "member_joined", // 새 멤버 참여
   MEMBER_LEFT = "member_left", // 멤버 탈퇴/추방
+  WORKSPACE_DELETED = "workspace_deleted", // 워크스페이스 삭제
 }
 
 @Entity("NotificationSetting")
@@ -61,6 +62,7 @@ export class NotificationSetting {
       NotificationType.ADJUSTMENT_COMPLETED,
       NotificationType.MEMBER_JOINED,
       NotificationType.MEMBER_LEFT,
+      NotificationType.WORKSPACE_DELETED,
     ],
   })
   enabledTypes: NotificationType[];

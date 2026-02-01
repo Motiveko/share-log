@@ -36,10 +36,17 @@ export interface MemberEventPayload {
   newRole?: string;
 }
 
+export interface WorkspaceDeletedEventPayload {
+  workspaceId: number;
+  workspaceName: string;
+  recipientIds: number[];
+}
+
 export type WorkspaceEventPayload =
   | LogEventPayload
   | AdjustmentEventPayload
-  | MemberEventPayload;
+  | MemberEventPayload
+  | WorkspaceDeletedEventPayload;
 
 const MESSAGE_TEMPLATES: Record<
   NotificationType,
@@ -72,6 +79,10 @@ const MESSAGE_TEMPLATES: Record<
   [NotificationType.ROLE_CHANGED]: {
     title: "[{{workspaceName}}] 권한 변경",
     body: "{{targetUserNickname}}님의 권한이 {{newRole}}(으)로 변경되었습니다.",
+  },
+  [NotificationType.WORKSPACE_DELETED]: {
+    title: "워크스페이스 삭제됨",
+    body: "'{{workspaceName}}' 워크스페이스가 삭제되었습니다.",
   },
 };
 

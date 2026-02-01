@@ -40,6 +40,9 @@ export class LandingUrlBuilder {
       case NotificationType.ROLE_CHANGED:
         return this.buildMemberLanding(workspaceId);
 
+      case NotificationType.WORKSPACE_DELETED:
+        return this.buildHomeLanding();
+
       default:
         return this.buildDefaultLanding(workspaceId);
     }
@@ -89,6 +92,15 @@ export class LandingUrlBuilder {
   private static buildDefaultLanding(workspaceId: number): NotificationData {
     return {
       landingUrl: `${this.baseUrl}/workspace/${workspaceId}`,
+    };
+  }
+
+  /**
+   * 홈 landing URL (워크스페이스 삭제 시)
+   */
+  private static buildHomeLanding(): NotificationData {
+    return {
+      landingUrl: this.baseUrl,
     };
   }
 }

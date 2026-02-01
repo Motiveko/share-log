@@ -8,6 +8,7 @@ export enum NotificationType {
   ADJUSTMENT_COMPLETED = "adjustment_completed",
   MEMBER_JOINED = "member_joined",
   MEMBER_LEFT = "member_left",
+  WORKSPACE_DELETED = "workspace_deleted",
 }
 
 export interface NotificationSetting {

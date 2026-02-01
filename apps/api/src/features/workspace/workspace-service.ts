@@ -8,6 +8,7 @@ import { InvitationService } from "@api/features/invitation/invitation-service";
 import { MethodService } from "@api/features/log/method-service";
 import { CreateWorkspaceRequestDto, UpdateWorkspaceRequestDto } from "@api/features/workspace/dto";
 import { NotFoundError } from "@api/errors/not-found";
+import { ActionQueuePublisher } from "@api/lib/action-queue";
 import logger from "@api/lib/logger";
 
 @singleton()
@@ -17,7 +18,8 @@ export class WorkspaceService {
     private readonly memberRepository: MemberRepository,
     private readonly lastVisitService: LastVisitService,
     private readonly invitationService: InvitationService,
-    private readonly methodService: MethodService
+    private readonly methodService: MethodService,
+    private readonly actionQueuePublisher: ActionQueuePublisher
   ) {}
 
   /**
@@ -115,10 +117,31 @@ export class WorkspaceService {
   /**
    * 워크스페이스 삭제 (MASTER만 가능)
    */
-  async delete(workspaceId: number): Promise<void> {
+  async delete(workspaceId: number, requestUserId: number): Promise<void> {
     const workspace = await this.workspaceRepository.findById(workspaceId);
     if (!workspace) {
       throw new NotFoundError("워크스페이스를 찾을 수 없습니다.");
+    }
+
+    // 삭제 전 멤버 목록 조회 (알림 발송용)
+    const members = await this.memberRepository.findAcceptedMembersWithUser(workspaceId);
+    const recipientIds = members
+      .map((m) => m.userId)
+      .filter((userId) => userId !== requestUserId);
+
+    // 삭제 알림 이벤트 발행 (DB 삭제 전에 발행)
+    if (recipientIds.length > 0) {
+      await this.actionQueuePublisher.publish({
+        type: "deleted",
+        aggregateType: "workspace",
+        aggregateId: workspaceId,
+        userId: requestUserId,
+        payload: {
+          workspaceId,
+          workspaceName: workspace.name,
+          recipientIds,
+        },
+      });
     }
 
     await this.workspaceRepository.remove(workspace);

@@ -22,6 +22,7 @@ import { MemberManagementSection } from "@web/features/workspace-settings/compon
 import { PendingInvitationsSection } from "@web/features/workspace-settings/components/pending-invitations-section";
 import { CategoryMethodSection } from "@web/features/workspace-settings/components/category-method-section";
 import { NotificationSettingSection } from "@web/features/workspace-settings/components/notification-setting-section";
+import { DangerZoneSection } from "@web/features/workspace-settings/components/danger-zone-section";
 import { getErrorMessage } from "@web/lib/error";
 
 function WorkspaceSettingsPage() {
@@ -160,6 +161,13 @@ function WorkspaceSettingsPage() {
         />
 
         <NotificationSettingSection workspaceId={workspaceIdNum} />
+
+        {isMaster && (
+          <DangerZoneSection
+            workspaceId={workspaceIdNum}
+            workspaceName={currentWorkspace.name}
+          />
+        )}
       </div>
     </div>
   );
