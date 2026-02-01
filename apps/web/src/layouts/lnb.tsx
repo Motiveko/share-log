@@ -9,13 +9,13 @@ import { EmptyState } from "@web/components/ui/empty-state";
 
 function Lnb() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
-  const { workspaces, fetchWorkspaces, status } = useWorkspaceStore();
+  const { workspaces, fetchWorkspaces, workspacesStatus } = useWorkspaceStore();
 
   useEffect(() => {
-    if (status === "idle") {
+    if (workspacesStatus === "idle") {
       void fetchWorkspaces();
     }
-  }, [status, fetchWorkspaces]);
+  }, [workspacesStatus, fetchWorkspaces]);
 
   const currentWorkspaceId = workspaceId ? parseInt(workspaceId, 10) : null;
 
@@ -26,11 +26,11 @@ function Lnb() {
       </div>
 
       <nav className="flex-1 overflow-y-auto p-2">
-        {status === "loading" && (
+        {workspacesStatus === "loading" && workspaces.length === 0 && (
           <Loading message="로딩 중..." className="py-8" />
         )}
 
-        {status === "success" && workspaces.length === 0 && (
+        {workspacesStatus === "success" && workspaces.length === 0 && (
           <EmptyState
             icon={Inbox}
             title="워크스페이스가 없습니다"
@@ -46,7 +46,8 @@ function Lnb() {
                 className={cn(
                   "block px-3 py-2 rounded-md text-sm transition-colors",
                   "hover:bg-accent hover:text-accent-foreground",
-                  currentWorkspaceId === ws.id && "bg-accent text-accent-foreground"
+                  currentWorkspaceId === ws.id &&
+                    "bg-accent text-accent-foreground"
                 )}
               >
                 <span className="truncate block">{ws.name}</span>

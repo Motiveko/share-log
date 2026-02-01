@@ -15,7 +15,8 @@ interface WorkspaceState {
   workspaces: WorkspaceWithMemberCount[];
   currentWorkspace: WorkspaceWithMemberCount | null;
   members: WorkspaceMemberWithUser[];
-  status: StateStatus;
+  workspacesStatus: StateStatus;
+  currentWorkspaceStatus: StateStatus;
   membersStatus: StateStatus;
   lastVisitWorkspaceId: number | null;
 }
@@ -41,7 +42,8 @@ const initialState: WorkspaceState = {
   workspaces: [],
   currentWorkspace: null,
   members: [],
-  status: "idle",
+  workspacesStatus: "idle",
+  currentWorkspaceStatus: "idle",
   membersStatus: "idle",
   lastVisitWorkspaceId: null,
 };
@@ -54,17 +56,17 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       fetchWorkspaces: async () => {
         try {
           set((state) => {
-            state.status = "loading";
+            state.workspacesStatus = "loading";
           });
           const workspaces = await API.workspace.list();
           set((state) => {
             state.workspaces = workspaces;
-            state.status = "success";
+            state.workspacesStatus = "success";
           });
         } catch (error) {
           logger.error(error);
           set((state) => {
-            state.status = "error";
+            state.workspacesStatus = "error";
           });
         }
       },
@@ -72,17 +74,17 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       fetchWorkspace: async (workspaceId: number) => {
         try {
           set((state) => {
-            state.status = "loading";
+            state.currentWorkspaceStatus = "loading";
           });
           const workspace = await API.workspace.get(workspaceId);
           set((state) => {
             state.currentWorkspace = workspace;
-            state.status = "success";
+            state.currentWorkspaceStatus = "success";
           });
         } catch (error) {
           logger.error(error);
           set((state) => {
-            state.status = "error";
+            state.currentWorkspaceStatus = "error";
           });
         }
       },

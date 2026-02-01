@@ -23,7 +23,7 @@ import { modalService } from "@web/features/modal";
 
 function WorkspaceDashboardPage() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
-  const { currentWorkspace, fetchWorkspace, members, fetchMembers, status } = useWorkspaceStore();
+  const { currentWorkspace, fetchWorkspace, members, fetchMembers, currentWorkspaceStatus } = useWorkspaceStore();
   const { createLog, updateLog, deleteLog, fetchLogs, filter } = useLogStore();
   const { fetchStats, summary, dailyData, methodStats, categoryStats, userStats } = useStatsStore();
   const { user } = useAuthStore();
@@ -83,7 +83,7 @@ function WorkspaceDashboardPage() {
     setLogFormOpen(true);
   };
 
-  if (status === "loading") {
+  if (currentWorkspaceStatus === "loading" && !currentWorkspace) {
     return <LoadingOverlay />;
   }
 

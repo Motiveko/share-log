@@ -27,7 +27,7 @@ import { getErrorMessage } from "@web/lib/error";
 
 function WorkspaceSettingsPage() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
-  const { currentWorkspace, fetchWorkspace, members, fetchMembers, status } =
+  const { currentWorkspace, fetchWorkspace, members, fetchMembers, currentWorkspaceStatus } =
     useWorkspaceStore();
   const { user } = useAuthStore();
 
@@ -65,7 +65,7 @@ function WorkspaceSettingsPage() {
     });
   };
 
-  if (status === "loading") {
+  if (currentWorkspaceStatus === "loading" && !currentWorkspace) {
     return <LoadingOverlay />;
   }
 

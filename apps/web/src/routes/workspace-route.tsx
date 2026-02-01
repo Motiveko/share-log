@@ -6,7 +6,7 @@ type RouteStatus = "loading" | "has_workspaces" | "no_workspaces";
 
 function WorkspaceRoute() {
   const location = useLocation();
-  const { workspaces, fetchWorkspaces, fetchLastVisit, lastVisitWorkspaceId, status } =
+  const { workspaces, fetchWorkspaces, fetchLastVisit, lastVisitWorkspaceId, workspacesStatus } =
     useWorkspaceStore();
   const [routeStatus, setRouteStatus] = useState<RouteStatus>("loading");
 
@@ -19,17 +19,17 @@ function WorkspaceRoute() {
   }, [fetchWorkspaces, fetchLastVisit]);
 
   useEffect(() => {
-    if (status === "success") {
+    if (workspacesStatus === "success") {
       if (workspaces.length > 0) {
         setRouteStatus("has_workspaces");
       } else {
         setRouteStatus("no_workspaces");
       }
-    } else if (status === "error") {
+    } else if (workspacesStatus === "error") {
       // 에러가 발생해도 워크스페이스가 없는 것으로 처리
       setRouteStatus("no_workspaces");
     }
-  }, [status, workspaces.length]);
+  }, [workspacesStatus, workspaces.length]);
 
   // 로딩 중
   if (routeStatus === "loading") {
