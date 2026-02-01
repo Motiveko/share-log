@@ -49,39 +49,54 @@ export function LogListItem({
         </div>
       </div>
       <div className="flex items-center gap-4">
-        <div className="flex flex-col items-end">
-          <span
-            className={`font-semibold ${
-              isExpense ? "text-red-500" : "text-green-500"
-            }`}
-          >
-            {isExpense ? "-" : "+"}
-            {formatCurrency(log.amount)}
-          </span>
-          <span className="text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full overflow-hidden border shrink-0">
+            {log.user.avatarUrl ? (
+              <img
+                src={log.user.avatarUrl}
+                alt={log.user.nickname || "사용자"}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+                {(log.user.nickname?.[0] || "?").toUpperCase()}
+              </div>
+            )}
+          </div>
+          <span className="text-xs text-muted-foreground w-16 truncate">
             {log.user.nickname || "알 수 없음"}
           </span>
         </div>
-        {isOwner && (
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => onEdit(log)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => onDelete(log.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+        <span
+          className={`font-semibold w-24 text-right ${
+            isExpense ? "text-red-500" : "text-green-500"
+          }`}
+        >
+          {isExpense ? "-" : "+"}
+          {formatCurrency(log.amount)}
+        </span>
+        <div className="flex gap-1 w-[68px]">
+          {isOwner && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => onEdit(log)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive"
+                onClick={() => onDelete(log.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

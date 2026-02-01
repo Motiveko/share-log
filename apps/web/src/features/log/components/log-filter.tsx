@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "react-router";
 import { Calendar } from "lucide-react";
 import {
   Select,
@@ -24,21 +25,94 @@ interface LogFilterProps {
   onFilterChange: (filter: LogListQuery) => void;
 }
 
+const ALL_VALUE = "all";
+
+function getFilterFromSearchParams(searchParams: URLSearchParams): {
+  dateRange: DateRange;
+  type: string;
+  userId: string;
+  categoryId: string;
+  methodId: string;
+} {
+  const defaultRange = getCurrentMonthRange();
+  return {
+    dateRange: {
+      startDate: searchParams.get("startDate") ?? defaultRange.startDate,
+      endDate: searchParams.get("endDate") ?? defaultRange.endDate,
+    },
+    type: searchParams.get("type") ?? ALL_VALUE,
+    userId: searchParams.get("userId") ?? ALL_VALUE,
+    categoryId: searchParams.get("categoryId") ?? ALL_VALUE,
+    methodId: searchParams.get("methodId") ?? ALL_VALUE,
+  };
+}
+
+function buildLogListQuery(params: {
+  dateRange: DateRange;
+  type: string;
+  userId: string;
+  categoryId: string;
+  methodId: string;
+}): LogListQuery {
+  const filter: LogListQuery = {};
+  if (params.dateRange.startDate) filter.startDate = params.dateRange.startDate;
+  if (params.dateRange.endDate) filter.endDate = params.dateRange.endDate;
+  if (params.type !== ALL_VALUE) filter.type = params.type as LogType;
+  if (params.userId !== ALL_VALUE) filter.userId = Number(params.userId);
+  if (params.categoryId !== ALL_VALUE) filter.categoryId = Number(params.categoryId);
+  if (params.methodId !== ALL_VALUE) filter.methodId = Number(params.methodId);
+  return filter;
+}
+
 export function LogFilter({ workspaceId, onFilterChange }: LogFilterProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { categories, fetchCategories } = useCategoryStore();
   const { methods, fetchMethods } = useMethodStore();
   const { members, fetchMembers } = useWorkspaceStore();
 
-  const ALL_VALUE = "all";
-
-  const [dateRange, setDateRange] = useState<DateRange>(getCurrentMonthRange);
+  const initialParams = getFilterFromSearchParams(searchParams);
+  const [dateRange, setDateRange] = useState<DateRange>(initialParams.dateRange);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [type, setType] = useState<string>(ALL_VALUE);
-  const [userId, setUserId] = useState<string>(ALL_VALUE);
-  const [categoryId, setCategoryId] = useState<string>(ALL_VALUE);
-  const [methodId, setMethodId] = useState<string>(ALL_VALUE);
+  const [type, setType] = useState<string>(initialParams.type);
+  const [userId, setUserId] = useState<string>(initialParams.userId);
+  const [categoryId, setCategoryId] = useState<string>(initialParams.categoryId);
+  const [methodId, setMethodId] = useState<string>(initialParams.methodId);
 
-  const initializedRef = useRef(false);
+  const updateSearchParams = useCallback(
+    (params: {
+      dateRange: DateRange;
+      type: string;
+      userId: string;
+      categoryId: string;
+      methodId: string;
+    }) => {
+      const defaultRange = getCurrentMonthRange();
+      const newParams = new URLSearchParams();
+
+      // 디폴트 값이 아닌 경우에만 URL에 포함
+      if (params.dateRange.startDate && params.dateRange.startDate !== defaultRange.startDate) {
+        newParams.set("startDate", params.dateRange.startDate);
+      }
+      if (params.dateRange.endDate && params.dateRange.endDate !== defaultRange.endDate) {
+        newParams.set("endDate", params.dateRange.endDate);
+      }
+      if (params.type !== ALL_VALUE) {
+        newParams.set("type", params.type);
+      }
+      if (params.userId !== ALL_VALUE) {
+        newParams.set("userId", params.userId);
+      }
+      if (params.categoryId !== ALL_VALUE) {
+        newParams.set("categoryId", params.categoryId);
+      }
+      if (params.methodId !== ALL_VALUE) {
+        newParams.set("methodId", params.methodId);
+      }
+
+      setSearchParams(newParams);
+    },
+    [setSearchParams]
+  );
 
   useEffect(() => {
     void fetchCategories(workspaceId);
@@ -46,53 +120,39 @@ export function LogFilter({ workspaceId, onFilterChange }: LogFilterProps) {
     void fetchMembers(workspaceId);
   }, [workspaceId, fetchCategories, fetchMethods, fetchMembers]);
 
-  // Initial filter with current month on mount
+  // URL 파라미터 변경 시 (초기 로드, 뒤로가기/앞으로가기) 필터 상태 동기화 및 데이터 fetch
   useEffect(() => {
-    if (!initializedRef.current && workspaceId) {
-      initializedRef.current = true;
-      const currentMonthRange = getCurrentMonthRange();
-      onFilterChange({
-        startDate: currentMonthRange.startDate,
-        endDate: currentMonthRange.endDate,
-      });
-    }
-  }, [workspaceId, onFilterChange]);
+    if (!workspaceId) return;
+
+    const params = getFilterFromSearchParams(searchParams);
+
+    // 상태 동기화
+    setDateRange(params.dateRange);
+    setType(params.type);
+    setUserId(params.userId);
+    setCategoryId(params.categoryId);
+    setMethodId(params.methodId);
+
+    onFilterChange(buildLogListQuery(params));
+  }, [workspaceId, searchParams, onFilterChange]);
 
   const handleApplyFilter = () => {
-    const filter: LogListQuery = {};
-    if (dateRange.startDate) filter.startDate = dateRange.startDate;
-    if (dateRange.endDate) filter.endDate = dateRange.endDate;
-    if (type !== ALL_VALUE) filter.type = type as LogType;
-    if (userId !== ALL_VALUE) filter.userId = Number(userId);
-    if (categoryId !== ALL_VALUE) filter.categoryId = Number(categoryId);
-    if (methodId !== ALL_VALUE) filter.methodId = Number(methodId);
-    onFilterChange(filter);
+    const params = { dateRange, type, userId, categoryId, methodId };
+    updateSearchParams(params);
+    // onFilterChange는 useEffect에서 searchParams 변경 감지 시 호출됨
   };
 
   const handleReset = () => {
-    const currentMonthRange = getCurrentMonthRange();
-    setDateRange(currentMonthRange);
-    setType(ALL_VALUE);
-    setUserId(ALL_VALUE);
-    setCategoryId(ALL_VALUE);
-    setMethodId(ALL_VALUE);
-    onFilterChange({
-      startDate: currentMonthRange.startDate,
-      endDate: currentMonthRange.endDate,
-    });
+    setSearchParams(new URLSearchParams());
+    // 상태 초기화와 onFilterChange는 useEffect에서 searchParams 변경 감지 시 처리됨
   };
 
   const handleDateRangeChange = (range: DateRange) => {
     setDateRange(range);
     // Apply filter immediately when date range changes
-    const filter: LogListQuery = {};
-    if (range.startDate) filter.startDate = range.startDate;
-    if (range.endDate) filter.endDate = range.endDate;
-    if (type !== ALL_VALUE) filter.type = type as LogType;
-    if (userId !== ALL_VALUE) filter.userId = Number(userId);
-    if (categoryId !== ALL_VALUE) filter.categoryId = Number(categoryId);
-    if (methodId !== ALL_VALUE) filter.methodId = Number(methodId);
-    onFilterChange(filter);
+    const params = { dateRange: range, type, userId, categoryId, methodId };
+    updateSearchParams(params);
+    // onFilterChange는 useEffect에서 searchParams 변경 감지 시 호출됨
   };
 
   return (
