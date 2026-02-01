@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import AppRoutes from "@web/app/routes";
 import { preRenderSetup } from "@web/init";
 import { ModalProvider } from "@web/features/modal";
+import { DebugPanel } from "@web/features/debug";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +35,7 @@ if (el) {
           }}
         />
         <ModalProvider />
+        <DebugPanel />
       </BrowserRouter>
     </QueryClientProvider>
   );

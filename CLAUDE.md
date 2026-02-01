@@ -110,6 +110,7 @@ docker compose -f infra/docker-compose-local.yml up -d
     /toast               # 토스트 알림 (toast-service, toast)
     /modal               # 모달 서비스 (modal-service, modal-provider) - alert, confirm, destructive
     /theme               # 테마 (store)
+    /debug               # 개발환경 디버그 패널 (debug-panel)
 
   /components/ui         # 범용 UI 컴포넌트 (shadcn/ui 스타일)
     button, input, label, card, dialog, alert-dialog, select, tabs, table,
@@ -274,6 +275,14 @@ await modalService.destructive("정말 추방하시겠습니까?", {
 - `confirm`: 일반 확인 모달 (기본 버튼)
 - `alert`: 알림 모달 (확인 버튼만)
 - `destructive`: 위험 동작 확인 모달 (빨간 버튼)
+
+## Debug Panel (개발환경 전용)
+
+개발환경(`import.meta.env.DEV`)에서만 표시되는 디버그 패널:
+- 화면 좌측 하단 벌레 아이콘 버튼 클릭으로 열기/닫기
+- 토스트 테스트 (success, error, warning, info, with action)
+
+새로운 디버그 기능 추가 시 `apps/web/src/features/debug/debug-panel.tsx`에 섹션 추가.
 
 ## Infrastructure Services (Local)
 
