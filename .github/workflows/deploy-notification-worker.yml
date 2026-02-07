@@ -36,8 +36,13 @@ jobs:
           tags: |
             ${{ env.NOTIFICATION_WORKER_IMAGE_NAME }}:${{ steps.version.outputs.version }}
             ${{ env.NOTIFICATION_WORKER_IMAGE_NAME }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=local,src=/tmp/.buildx-cache-worker
+          cache-to: type=local,dest=/tmp/.buildx-cache-worker-new,mode=max
+
+      - name: Rotate buildx cache
+        run: |
+          rm -rf /tmp/.buildx-cache-worker
+          mv /tmp/.buildx-cache-worker-new /tmp/.buildx-cache-worker || true
 
       - name: Stop existing container (if running)
         run: |

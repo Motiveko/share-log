@@ -36,8 +36,13 @@ jobs:
           tags: |
             ${{ env.API_IMAGE_NAME }}:${{ steps.version.outputs.version }}
             ${{ env.API_IMAGE_NAME }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=local,src=/tmp/.buildx-cache-api
+          cache-to: type=local,dest=/tmp/.buildx-cache-api-new,mode=max
+
+      - name: Rotate buildx cache
+        run: |
+          rm -rf /tmp/.buildx-cache-api
+          mv /tmp/.buildx-cache-api-new /tmp/.buildx-cache-api || true
 
       - name: Stop existing container (if running)
         run: |
