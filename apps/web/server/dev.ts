@@ -14,7 +14,7 @@ const getViteMiddlewares = async () => {
   return viteServer.middlewares;
 };
 
-const port = process.env.PORT || 4321;
+const port = process.env.VITE_ENV_PORT || 4321;
 
 logger.log(`리액트 서버: http://localhost:${port}`);
 

@@ -45,7 +45,7 @@ class App {
 
   constructor(
     private redisClient: RedisClient,
-    private dataSource: DataSource
+    private dataSource: DataSource,
   ) {
     this.express = express();
     this.port = Number(Config.PORT || 5001);
@@ -72,6 +72,9 @@ class App {
   }
 
   mountRouter() {
+    if (Config.env === "production") {
+      this.express.set("trust proxy", 1);
+    }
     this.express.get("/healthz", (req, res) => res.send(200));
     this.express
       .disable("x-powered-by")
@@ -149,21 +152,21 @@ class App {
     publicRoute.get(
       "/v1/auth/google/callback",
       googleCallbackAuthenticate,
-      this.authController.googleCallback.bind(this.authController)
+      this.authController.googleCallback.bind(this.authController),
     );
     publicRoute.post(
       "/v1/auth/google/app",
-      this.authController.googleOAuthApp.bind(this.authController)
+      this.authController.googleOAuthApp.bind(this.authController),
     );
     publicRoute.post(
       "/v1/auth/logout",
-      this.authController.logout.bind(this.authController)
+      this.authController.logout.bind(this.authController),
     );
 
     // Push notifications - public endpoint for VAPID key
     publicRoute.get(
       "/v1/push/vapid-public-key",
-      this.pushController.getVapidPublicKey.bind(this.pushController)
+      this.pushController.getVapidPublicKey.bind(this.pushController),
     );
 
     return publicRoute;
@@ -173,48 +176,48 @@ class App {
     const privateRoute = Router() as PrivateRoute;
     privateRoute.get(
       "/v1/user",
-      this.userController.get.bind(this.userController)
+      this.userController.get.bind(this.userController),
     );
 
     privateRoute.post(
       "/v1/storage/presigned-url",
-      this.storageController.createPresignedUrl.bind(this.storageController)
+      this.storageController.createPresignedUrl.bind(this.storageController),
     );
     privateRoute.post(
       "/v1/storage/multipart/initiate",
       this.storageController.initiateMultipartUpload.bind(
-        this.storageController
-      )
+        this.storageController,
+      ),
     );
     privateRoute.post(
       "/v1/storage/multipart/presigned-urls",
       this.storageController.generatePartPresignedUrls.bind(
-        this.storageController
-      )
+        this.storageController,
+      ),
     );
     privateRoute.post(
       "/v1/storage/multipart/complete",
       this.storageController.completeMultipartUpload.bind(
-        this.storageController
-      )
+        this.storageController,
+      ),
     );
     privateRoute.post(
       "/v1/storage/multipart/abort",
-      this.storageController.abortMultipartUpload.bind(this.storageController)
+      this.storageController.abortMultipartUpload.bind(this.storageController),
     );
 
     // Push notifications
     privateRoute.post(
       "/v1/push/subscribe",
-      this.pushController.subscribe.bind(this.pushController)
+      this.pushController.subscribe.bind(this.pushController),
     );
     privateRoute.post(
       "/v1/push/unsubscribe",
-      this.pushController.unsubscribe.bind(this.pushController)
+      this.pushController.unsubscribe.bind(this.pushController),
     );
     privateRoute.post(
       "/v1/push/test",
-      this.pushController.sendTest.bind(this.pushController)
+      this.pushController.sendTest.bind(this.pushController),
     );
 
     return privateRoute;
@@ -225,16 +228,16 @@ class App {
     const testRoute = Router() as PrivateRoute;
     testRoute.post(
       "/v1/test/login",
-      this.testController.login.bind(this.testController)
+      this.testController.login.bind(this.testController),
     );
     testRoute.post(
       "/v1/test/logout",
-      this.testController.logout.bind(this.testController)
+      this.testController.logout.bind(this.testController),
     );
 
     testRoute.post(
       "/v1/test/storage/presigned-url",
-      this.storageController.createPresignedUrl.bind(this.storageController)
+      this.storageController.createPresignedUrl.bind(this.storageController),
     );
 
     return testRoute;
