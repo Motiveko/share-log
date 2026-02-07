@@ -23,6 +23,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Copy env file
+        run: |
+          SOURCE=~/envs/${{ env.REPO_NAME }}/apps/${{ env.APPS_NAME }}/.env.production
+          DEST=./apps/${{ env.APPS_NAME }}/.env.production
+
+          if [ ! -f "$SOURCE" ]; then
+            echo "❌ Source env file not found: $SOURCE"
+            exit 1
+          fi
+
+          cp "$SOURCE" "$DEST"
+
+          if [ ! -f "$DEST" ]; then
+            echo "❌ Failed to copy env file to: $DEST"
+            exit 1
+          fi
+
+          echo "✅ Env file copied successfully ($(wc -l < "$DEST") lines)"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -52,6 +71,11 @@ jobs:
             docker rm ${{ env.CONTAINER_NAME }} || true
           fi
 
+      - name: Cleanup env file
+        if: always()
+        run: |
+          rm -f ./apps/${{ env.APPS_NAME }}/.env.production
+
       - name: Run container
         run: |
           docker run -d \
@@ -60,7 +84,6 @@ jobs:
             --restart unless-stopped \
             -p ${{ env.PORT }}:${{ env.PORT }} \
             -v ~/logs:/app/logs \
-            -v ~/envs/${{ env.REPO_NAME }}/apps/${{ env.APPS_NAME }}/.env.production:/app/.env.production:ro \
             ${{ env.NOTIFICATION_WORKER_IMAGE_NAME }}:latest
 
       - name: Cleanup old images

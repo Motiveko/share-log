@@ -28,6 +28,9 @@ WORKDIR /app
 # - dist/server/index.js: Express 서버 (tsup 번들)
 # - dist/index.html, dist/assets/*: Vite 빌드 결과물 (정적 파일)
 COPY --from=base /app/apps/web/dist ./dist
+COPY --from=base /app/apps/web/.env.production ./.env.production
+
+
 # 로그 디렉토리 생성
 RUN mkdir -p /app/logs
 

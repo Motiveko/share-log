@@ -35,6 +35,7 @@ jest.e2e.config.*
 .env
 .env.*
 !.env.example
+!.env.production
 
 # Docker
 **/Dockerfile
