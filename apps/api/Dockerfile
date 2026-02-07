@@ -26,8 +26,6 @@ WORKDIR /app
 
 # 빌드 결과물만 복사 (tsup이 모든 의존성을 번들링하므로 node_modules 불필요)
 COPY --from=base /app/apps/api/dist ./dist
-COPY --from=base /app/apps/api/.env.production ./.env.production
-
 # 로그 디렉토리 생성
 RUN mkdir -p /app/logs
 
