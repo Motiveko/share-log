@@ -16,7 +16,7 @@ export interface ActionEvent<T = unknown> {
   timestamp: Date;
 }
 
-export const ACTION_EVENT_QUEUE_NAME = "turborepo-api-action-events";
+export const ACTION_EVENT_QUEUE_NAME = "reframe-api-action-events";
 
 @singleton()
 export class ActionQueuePublisher {

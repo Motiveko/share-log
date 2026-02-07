@@ -14,12 +14,12 @@ const fs = require("fs");
 const path = require("path");
 
 // 현재 프로젝트 설정 (변경 전)
-const CURRENT_PROJECT_NAME = "share-log";
-const CURRENT_PROJECT_NAME_NO_HYPHEN = "sharelog";
+const CURRENT_PROJECT_NAME = "reframe";
+const CURRENT_PROJECT_NAME_NO_HYPHEN = "reframe";
 const CURRENT_PORTS = {
-  web: 5050,
-  api: 5051,
-  "notification-worker": 5052,
+  web: 6640,
+  api: 6641,
+  "notification-worker": 6642,
 };
 
 // 검색에서 제외할 디렉토리/파일

@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
 
 env:
-  REPO_NAME: share-log
-  CONTAINER_NAME: share-log-web
+  REPO_NAME: reframe
+  CONTAINER_NAME: reframe-web
   APPS_NAME: web
-  PORT: 5050
-  WEB_IMAGE_NAME: ${{ github.repository }}/share-log-web
+  PORT: 6640
+  WEB_IMAGE_NAME: ${{ github.repository }}/reframe-web
 
 jobs:
   deploy-web:
