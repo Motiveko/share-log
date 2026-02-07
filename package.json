@@ -11,7 +11,8 @@
     "clear": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +",
     "typecheck": "turbo run typecheck",
     "turbo": "turbo",
-    "sync-env": "bash scripts/sync-env.sh"
+    "sync-env": "bash scripts/sync-env.sh",
+    "setup-project": "node scripts/setup-project.js"
   },
   "devDependencies": {
     "@swc/core": "^1.11.4",
@@ -30,7 +31,7 @@
   "engines": {
     "node": ">=18"
   },
-  "name": "share-log",
+  "name": "reframe",
   "dependencies": {
     "@changesets/cli": "^2.27.11"
   }
