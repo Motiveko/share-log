@@ -12,7 +12,8 @@
     "typecheck": "turbo run typecheck",
     "turbo": "turbo",
     "sync-env": "bash scripts/sync-env.sh",
-    "setup-project": "node scripts/setup-project.js"
+    "setup-project": "node scripts/setup-project.js",
+    "sync-compose": "bash infra/sync-compose.sh"
   },
   "devDependencies": {
     "@swc/core": "^1.11.4",
