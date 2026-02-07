@@ -76,6 +76,11 @@ jobs:
         run: |
           rm -f ./apps/${{ env.APPS_NAME }}/.env.production
 
+      - name: Prepare log directory
+        run: |
+          mkdir -p ~/logs
+          chmod 777 ~/logs
+
       - name: Run container
         run: |
           docker run -d \

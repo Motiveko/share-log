@@ -52,6 +52,11 @@ jobs:
             docker rm ${{ env.CONTAINER_NAME }} || true
           fi
 
+      - name: Prepare log directory
+        run: |
+          mkdir -p ~/logs
+          chmod 777 ~/logs
+
       - name: Run container
         run: |
           docker run -d \
