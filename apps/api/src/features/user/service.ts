@@ -20,10 +20,6 @@ export class UserService {
     });
 
     if (userFound) {
-      // update user
-      userFound.patch(profile);
-      await this.userRepository.save(userFound);
-
       return userFound;
     }
 
