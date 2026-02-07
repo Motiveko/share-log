@@ -56,6 +56,7 @@ jobs:
         run: |
           docker run -d \
             --network=docker_my-app-network \
+            --add-host storage.motiveko.shop:host-gateway \
             --name ${{ env.CONTAINER_NAME }} \
             --restart unless-stopped \
             -p ${{ env.PORT }}:${{ env.PORT }} \
