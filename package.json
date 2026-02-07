@@ -11,7 +11,8 @@
     "clear": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +",
     "typecheck": "turbo run typecheck",
     "turbo": "turbo",
-    "sync-env": "bash scripts/sync-env.sh"
+    "sync-env": "bash scripts/sync-env.sh",
+    "sync-compose": "bash infra/sync-compose.sh"
   },
   "devDependencies": {
     "@swc/core": "^1.11.4",
