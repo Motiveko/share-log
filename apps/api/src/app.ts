@@ -69,7 +69,7 @@ class App {
 
   constructor(
     private redisClient: RedisClient,
-    private dataSource: DataSource
+    private dataSource: DataSource,
   ) {
     this.express = express();
     this.port = Number(Config.PORT || 5001);
@@ -102,12 +102,15 @@ class App {
     this.statsController = container.resolve(StatsController);
     this.adjustmentController = container.resolve(AdjustmentController);
     this.notificationSettingController = container.resolve(
-      NotificationSettingController
+      NotificationSettingController,
     );
     this.notificationController = container.resolve(NotificationController);
   }
 
   mountRouter() {
+    if (Config.env === "production") {
+      this.express.set("trust proxy", 1);
+    }
     this.express.get("/healthz", (req, res) => res.send(200));
     this.express
       .disable("x-powered-by")
@@ -185,21 +188,21 @@ class App {
     publicRoute.get(
       "/v1/auth/google/callback",
       googleCallbackAuthenticate,
-      this.authController.googleCallback.bind(this.authController)
+      this.authController.googleCallback.bind(this.authController),
     );
     publicRoute.post(
       "/v1/auth/google/app",
-      this.authController.googleOAuthApp.bind(this.authController)
+      this.authController.googleOAuthApp.bind(this.authController),
     );
     publicRoute.post(
       "/v1/auth/logout",
-      this.authController.logout.bind(this.authController)
+      this.authController.logout.bind(this.authController),
     );
 
     // Push notifications - public endpoint for VAPID key
     publicRoute.get(
       "/v1/push/vapid-public-key",
-      this.pushController.getVapidPublicKey.bind(this.pushController)
+      this.pushController.getVapidPublicKey.bind(this.pushController),
     );
 
     return publicRoute;
@@ -210,238 +213,240 @@ class App {
     // User routes
     privateRoute.get(
       "/v1/user",
-      this.userController.get.bind(this.userController)
+      this.userController.get.bind(this.userController),
     );
     privateRoute.patch(
       "/v1/user",
-      this.userController.patch.bind(this.userController)
+      this.userController.patch.bind(this.userController),
     );
     privateRoute.delete(
       "/v1/user",
-      this.userController.delete.bind(this.userController)
+      this.userController.delete.bind(this.userController),
     );
     privateRoute.get(
       "/v1/users/search",
-      this.userController.search.bind(this.userController)
+      this.userController.search.bind(this.userController),
     );
 
     privateRoute.post(
       "/v1/storage/presigned-url",
-      this.storageController.createPresignedUrl.bind(this.storageController)
+      this.storageController.createPresignedUrl.bind(this.storageController),
     );
     privateRoute.post(
       "/v1/storage/multipart/initiate",
       this.storageController.initiateMultipartUpload.bind(
-        this.storageController
-      )
+        this.storageController,
+      ),
     );
     privateRoute.post(
       "/v1/storage/multipart/presigned-urls",
       this.storageController.generatePartPresignedUrls.bind(
-        this.storageController
-      )
+        this.storageController,
+      ),
     );
     privateRoute.post(
       "/v1/storage/multipart/complete",
       this.storageController.completeMultipartUpload.bind(
-        this.storageController
-      )
+        this.storageController,
+      ),
     );
     privateRoute.post(
       "/v1/storage/multipart/abort",
-      this.storageController.abortMultipartUpload.bind(this.storageController)
+      this.storageController.abortMultipartUpload.bind(this.storageController),
     );
 
     // Push notifications
     privateRoute.post(
       "/v1/push/subscribe",
-      this.pushController.subscribe.bind(this.pushController)
+      this.pushController.subscribe.bind(this.pushController),
     );
     privateRoute.post(
       "/v1/push/unsubscribe",
-      this.pushController.unsubscribe.bind(this.pushController)
+      this.pushController.unsubscribe.bind(this.pushController),
     );
     privateRoute.post(
       "/v1/push/test",
-      this.pushController.sendTest.bind(this.pushController)
+      this.pushController.sendTest.bind(this.pushController),
     );
 
     // Workspace routes
     privateRoute.post(
       "/v1/workspaces",
-      this.workspaceController.create.bind(this.workspaceController)
+      this.workspaceController.create.bind(this.workspaceController),
     );
     privateRoute.get(
       "/v1/workspaces",
-      this.workspaceController.list.bind(this.workspaceController)
+      this.workspaceController.list.bind(this.workspaceController),
     );
     privateRoute.get(
       "/v1/workspaces/last-visit",
-      this.workspaceController.getLastVisit.bind(this.workspaceController)
+      this.workspaceController.getLastVisit.bind(this.workspaceController),
     );
     privateRoute.get(
       "/v1/workspaces/:id",
       requireWorkspaceMember,
-      this.workspaceController.get.bind(this.workspaceController)
+      this.workspaceController.get.bind(this.workspaceController),
     );
     privateRoute.patch(
       "/v1/workspaces/:id",
       requireWorkspaceMaster,
-      this.workspaceController.update.bind(this.workspaceController)
+      this.workspaceController.update.bind(this.workspaceController),
     );
     privateRoute.delete(
       "/v1/workspaces/:id",
       requireWorkspaceMaster,
-      this.workspaceController.delete.bind(this.workspaceController)
+      this.workspaceController.delete.bind(this.workspaceController),
     );
 
     // Workspace member routes
     privateRoute.get(
       "/v1/workspaces/:id/members",
       requireWorkspaceMember,
-      this.memberController.list.bind(this.memberController)
+      this.memberController.list.bind(this.memberController),
     );
     privateRoute.patch(
       "/v1/workspaces/:id/members/:userId",
       requireWorkspaceMaster,
-      this.memberController.updateRole.bind(this.memberController)
+      this.memberController.updateRole.bind(this.memberController),
     );
     privateRoute.delete(
       "/v1/workspaces/:id/members/:userId",
       requireWorkspaceMaster,
-      this.memberController.expel.bind(this.memberController)
+      this.memberController.expel.bind(this.memberController),
     );
 
     // Invitation routes
     privateRoute.post(
       "/v1/workspaces/:id/invitations",
       requireWorkspaceMember,
-      this.invitationController.create.bind(this.invitationController)
+      this.invitationController.create.bind(this.invitationController),
     );
     privateRoute.get(
       "/v1/workspaces/:id/invitations",
       requireWorkspaceMember,
       this.invitationController.listWorkspaceInvitations.bind(
-        this.invitationController
-      )
+        this.invitationController,
+      ),
     );
     privateRoute.delete(
       "/v1/workspaces/:id/invitations/:invitationId",
       requireWorkspaceMember,
-      this.invitationController.cancel.bind(this.invitationController)
+      this.invitationController.cancel.bind(this.invitationController),
     );
     privateRoute.get(
       "/v1/invitations",
-      this.invitationController.listMyInvitations.bind(this.invitationController)
+      this.invitationController.listMyInvitations.bind(
+        this.invitationController,
+      ),
     );
     privateRoute.patch(
       "/v1/invitations/:id",
-      this.invitationController.update.bind(this.invitationController)
+      this.invitationController.update.bind(this.invitationController),
     );
 
     // Category routes
     privateRoute.post(
       "/v1/workspaces/:id/categories",
       requireWorkspaceMember,
-      this.categoryController.create.bind(this.categoryController)
+      this.categoryController.create.bind(this.categoryController),
     );
     privateRoute.get(
       "/v1/workspaces/:id/categories",
       requireWorkspaceMember,
-      this.categoryController.list.bind(this.categoryController)
+      this.categoryController.list.bind(this.categoryController),
     );
     privateRoute.patch(
       "/v1/workspaces/:id/categories/:categoryId",
       requireWorkspaceMember,
-      this.categoryController.update.bind(this.categoryController)
+      this.categoryController.update.bind(this.categoryController),
     );
     privateRoute.delete(
       "/v1/workspaces/:id/categories/:categoryId",
       requireWorkspaceMaster,
-      this.categoryController.delete.bind(this.categoryController)
+      this.categoryController.delete.bind(this.categoryController),
     );
 
     // Method routes
     privateRoute.post(
       "/v1/workspaces/:id/methods",
       requireWorkspaceMember,
-      this.methodController.create.bind(this.methodController)
+      this.methodController.create.bind(this.methodController),
     );
     privateRoute.get(
       "/v1/workspaces/:id/methods",
       requireWorkspaceMember,
-      this.methodController.list.bind(this.methodController)
+      this.methodController.list.bind(this.methodController),
     );
     privateRoute.patch(
       "/v1/workspaces/:id/methods/:methodId",
       requireWorkspaceMember,
-      this.methodController.update.bind(this.methodController)
+      this.methodController.update.bind(this.methodController),
     );
     privateRoute.delete(
       "/v1/workspaces/:id/methods/:methodId",
       requireWorkspaceMaster,
-      this.methodController.delete.bind(this.methodController)
+      this.methodController.delete.bind(this.methodController),
     );
 
     // Log routes
     privateRoute.post(
       "/v1/workspaces/:id/logs",
       requireWorkspaceMember,
-      this.logController.create.bind(this.logController)
+      this.logController.create.bind(this.logController),
     );
     privateRoute.get(
       "/v1/workspaces/:id/logs",
       requireWorkspaceMember,
-      this.logController.list.bind(this.logController)
+      this.logController.list.bind(this.logController),
     );
     privateRoute.patch(
       "/v1/workspaces/:id/logs/:logId",
       requireWorkspaceMember,
-      this.logController.update.bind(this.logController)
+      this.logController.update.bind(this.logController),
     );
     privateRoute.delete(
       "/v1/workspaces/:id/logs/:logId",
       requireWorkspaceMember,
-      this.logController.delete.bind(this.logController)
+      this.logController.delete.bind(this.logController),
     );
 
     // Stats routes
     privateRoute.get(
       "/v1/workspaces/:id/stats",
       requireWorkspaceMember,
-      this.statsController.getStats.bind(this.statsController)
+      this.statsController.getStats.bind(this.statsController),
     );
 
     // Adjustment routes
     privateRoute.post(
       "/v1/workspaces/:id/adjustments",
       requireWorkspaceMember,
-      this.adjustmentController.create.bind(this.adjustmentController)
+      this.adjustmentController.create.bind(this.adjustmentController),
     );
     privateRoute.get(
       "/v1/workspaces/:id/adjustments",
       requireWorkspaceMember,
-      this.adjustmentController.list.bind(this.adjustmentController)
+      this.adjustmentController.list.bind(this.adjustmentController),
     );
     privateRoute.get(
       "/v1/workspaces/:id/adjustments/:adjustmentId",
       requireWorkspaceMember,
-      this.adjustmentController.get.bind(this.adjustmentController)
+      this.adjustmentController.get.bind(this.adjustmentController),
     );
     privateRoute.patch(
       "/v1/workspaces/:id/adjustments/:adjustmentId",
       requireWorkspaceMember,
-      this.adjustmentController.update.bind(this.adjustmentController)
+      this.adjustmentController.update.bind(this.adjustmentController),
     );
     privateRoute.delete(
       "/v1/workspaces/:id/adjustments/:adjustmentId",
       requireWorkspaceMember,
-      this.adjustmentController.delete.bind(this.adjustmentController)
+      this.adjustmentController.delete.bind(this.adjustmentController),
     );
     privateRoute.post(
       "/v1/workspaces/:id/adjustments/:adjustmentId/complete",
       requireWorkspaceMember,
-      this.adjustmentController.complete.bind(this.adjustmentController)
+      this.adjustmentController.complete.bind(this.adjustmentController),
     );
 
     // Notification setting routes
@@ -449,33 +454,35 @@ class App {
       "/v1/workspaces/:workspaceId/notification-settings",
       requireWorkspaceMember,
       this.notificationSettingController.get.bind(
-        this.notificationSettingController
-      )
+        this.notificationSettingController,
+      ),
     );
     privateRoute.patch(
       "/v1/workspaces/:workspaceId/notification-settings",
       requireWorkspaceMember,
       this.notificationSettingController.update.bind(
-        this.notificationSettingController
-      )
+        this.notificationSettingController,
+      ),
     );
 
     // Notification routes (in-app notifications)
     privateRoute.get(
       "/v1/notifications",
-      this.notificationController.list.bind(this.notificationController)
+      this.notificationController.list.bind(this.notificationController),
     );
     privateRoute.get(
       "/v1/notifications/unread-exists",
-      this.notificationController.checkUnread.bind(this.notificationController)
+      this.notificationController.checkUnread.bind(this.notificationController),
     );
     privateRoute.patch(
       "/v1/notifications/read-all",
-      this.notificationController.markAllAsRead.bind(this.notificationController)
+      this.notificationController.markAllAsRead.bind(
+        this.notificationController,
+      ),
     );
     privateRoute.patch(
       "/v1/notifications/:id/read",
-      this.notificationController.markAsRead.bind(this.notificationController)
+      this.notificationController.markAsRead.bind(this.notificationController),
     );
 
     return privateRoute;
@@ -486,16 +493,16 @@ class App {
     const testRoute = Router() as PrivateRoute;
     testRoute.post(
       "/v1/test/login",
-      this.testController.login.bind(this.testController)
+      this.testController.login.bind(this.testController),
     );
     testRoute.post(
       "/v1/test/logout",
-      this.testController.logout.bind(this.testController)
+      this.testController.logout.bind(this.testController),
     );
 
     testRoute.post(
       "/v1/test/storage/presigned-url",
-      this.storageController.createPresignedUrl.bind(this.storageController)
+      this.storageController.createPresignedUrl.bind(this.storageController),
     );
 
     return testRoute;
