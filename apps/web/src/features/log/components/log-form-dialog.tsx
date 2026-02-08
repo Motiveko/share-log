@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@web/components/ui/select";
+import { Combobox } from "@web/components/ui/combobox";
 import { DatePicker } from "@web/components/ui/date-picker";
 import { useCategoryStore } from "@web/features/category/store";
 import { useMethodStore } from "@web/features/method/store";
@@ -31,8 +32,6 @@ interface LogFormDialogProps {
   onSubmit: (data: CreateLogDto | UpdateLogDto) => Promise<void>;
 }
 
-const NONE_VALUE = "none";
-
 export function LogFormDialog({
   open,
   onOpenChange,
@@ -47,8 +46,8 @@ export function LogFormDialog({
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(formatDateForInput(new Date()));
   const [memo, setMemo] = useState("");
-  const [categoryId, setCategoryId] = useState<string>(NONE_VALUE);
-  const [methodId, setMethodId] = useState<string>(NONE_VALUE);
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [methodId, setMethodId] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEditMode = !!log;
@@ -66,17 +65,32 @@ export function LogFormDialog({
       setAmount(log.amount.toLocaleString());
       setDate(formatDateForInput(log.date));
       setMemo(log.memo || "");
-      setCategoryId(log.categoryId ? String(log.categoryId) : NONE_VALUE);
-      setMethodId(log.methodId ? String(log.methodId) : NONE_VALUE);
+      setCategoryId(log.categoryId ? String(log.categoryId) : "");
+      setMethodId(log.methodId ? String(log.methodId) : "");
     } else {
       setType(LogType.EXPENSE);
       setAmount("");
       setDate(formatDateForInput(new Date()));
       setMemo("");
-      setCategoryId(NONE_VALUE);
-      setMethodId(NONE_VALUE);
+      setCategoryId("");
+      setMethodId("");
     }
   }, [log, open]);
+
+  // 옵션이 로드되면 첫 번째 항목을 기본 선택
+  useEffect(() => {
+    if (!open) return;
+    if (!categoryId && categories.length > 0) {
+      setCategoryId(String(categories[0].id));
+    }
+  }, [open, categories, categoryId]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (!methodId && methods.length > 0) {
+      setMethodId(String(methods[0].id));
+    }
+  }, [open, methods, methodId]);
 
   const handleSubmit = async () => {
     if (!amount || !date) return;
@@ -88,8 +102,8 @@ export function LogFormDialog({
         amount: Number(amount.replace(/,/g, "")),
         date,
         memo: memo || undefined,
-        categoryId: categoryId !== NONE_VALUE ? Number(categoryId) : null,
-        methodId: methodId !== NONE_VALUE ? Number(methodId) : null,
+        categoryId: categoryId ? Number(categoryId) : null,
+        methodId: methodId ? Number(methodId) : null,
       };
       await onSubmit(data);
       onOpenChange(false);
@@ -141,36 +155,28 @@ export function LogFormDialog({
 
           <div className="space-y-2">
             <Label>카테고리</Label>
-            <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger>
-                <SelectValue placeholder="카테고리 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NONE_VALUE}>선택 안함</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={String(cat.id)}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Combobox
+              options={categories.map((cat) => ({
+                value: String(cat.id),
+                label: cat.name,
+              }))}
+              value={categoryId}
+              onValueChange={setCategoryId}
+              placeholder="카테고리 선택"
+            />
           </div>
 
           <div className="space-y-2">
             <Label>수단</Label>
-            <Select value={methodId} onValueChange={setMethodId}>
-              <SelectTrigger>
-                <SelectValue placeholder="수단 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NONE_VALUE}>선택 안함</SelectItem>
-                {methods.map((method) => (
-                  <SelectItem key={method.id} value={String(method.id)}>
-                    {method.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Combobox
+              options={methods.map((method) => ({
+                value: String(method.id),
+                label: method.name,
+              }))}
+              value={methodId}
+              onValueChange={setMethodId}
+              placeholder="수단 선택"
+            />
           </div>
 
           <div className="space-y-2">
