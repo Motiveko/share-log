@@ -7,7 +7,7 @@ const UserSchema: z.ZodType<User> = z.object({
   id: z.number(),
   email: z.string(),
   nickname: z.string().optional().nullable(),
-  avatarUrl: z.string().optional(),
+  avatarUrl: z.string().optional().nullable(),
   slackWebhookUrl: z.string().optional().nullable(),
   isProfileComplete: z.boolean(),
   createdAt: z.coerce.date(),
@@ -17,7 +17,7 @@ const SearchUserSchema: z.ZodType<SearchUser> = z.object({
   id: z.number(),
   email: z.string(),
   nickname: z.string().optional(),
-  avatarUrl: z.string().optional(),
+  avatarUrl: z.string().optional().nullable(),
 });
 
 export const logout = async () => {

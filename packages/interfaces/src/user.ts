@@ -2,7 +2,7 @@ export interface User {
   id: number;
   email: string;
   nickname?: string | null;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
   slackWebhookUrl?: string | null;
   isProfileComplete: boolean;
   createdAt: Date;
