@@ -30,6 +30,9 @@ export class LogCategory {
   @Column({ default: 0 })
   sortOrder: number;
 
+  @Column({ type: "varchar", length: 7, nullable: true })
+  color?: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

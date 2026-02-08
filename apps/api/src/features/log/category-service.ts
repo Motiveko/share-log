@@ -40,6 +40,10 @@ export class CategoryService {
       category.sortOrder = maxOrder + 1;
     }
 
+    if (dto.color !== undefined) {
+      category.color = dto.color;
+    }
+
     return this.categoryRepository.save(category);
   }
 
@@ -83,6 +87,10 @@ export class CategoryService {
 
     if (dto.sortOrder !== undefined) {
       category.sortOrder = dto.sortOrder;
+    }
+
+    if (dto.color !== undefined) {
+      category.color = dto.color;
     }
 
     return this.categoryRepository.save(category);

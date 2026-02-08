@@ -19,6 +19,7 @@ const CategorySchema: z.ZodType<LogCategory> = z.object({
   workspaceId: z.number(),
   name: z.string(),
   sortOrder: z.number(),
+  color: z.string().nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
@@ -41,6 +42,7 @@ const LogWithRelationsSchema: z.ZodType<LogWithRelations> = z.object({
   methodId: z.number().nullable().optional(),
   date: z.coerce.date(),
   amount: z.number(),
+  description: z.string().nullable().optional(),
   memo: z.string().nullable().optional(),
   userId: z.number(),
   createdAt: z.coerce.date(),

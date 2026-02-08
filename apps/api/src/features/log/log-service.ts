@@ -31,6 +31,7 @@ export class LogService {
     log.type = dto.type;
     log.amount = dto.amount;
     log.date = new Date(dto.date);
+    log.description = dto.description;
     log.memo = dto.memo;
     log.categoryId = dto.categoryId;
     log.methodId = dto.methodId;
@@ -86,6 +87,7 @@ export class LogService {
     if (dto.type !== undefined) log.type = dto.type;
     if (dto.amount !== undefined) log.amount = dto.amount;
     if (dto.date !== undefined) log.date = new Date(dto.date);
+    if (dto.description !== undefined) log.description = dto.description ?? null;
     if (dto.memo !== undefined) log.memo = dto.memo ?? null;
     if (dto.categoryId !== undefined) {
       log.categoryId = dto.categoryId ?? null;
@@ -149,6 +151,7 @@ export class LogService {
           userNickname: user?.nickname ?? user?.email ?? "",
           logId: log.id,
           amount: Number(log.amount),
+          description: log.description,
           memo: log.memo,
           categoryName: log.category?.name,
         },

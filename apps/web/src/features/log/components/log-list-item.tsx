@@ -1,6 +1,7 @@
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@web/components/ui/button";
 import { Badge } from "@web/components/ui/badge";
+import { CategoryBadge } from "@web/features/category/components/category-badge";
 import { formatCurrency, formatDateShort } from "@web/lib/format";
 import type { LogWithRelations } from "@repo/interfaces";
 import { LogType } from "@repo/interfaces";
@@ -32,10 +33,13 @@ export function LogListItem({
             <Badge variant={isExpense ? "expense" : "income"}>
               {isExpense ? "지출" : "수입"}
             </Badge>
-            {log.category && (
-              <span className="text-xs text-muted-foreground">
-                {log.category.name}
+            {log.description && (
+              <span className="text-sm font-medium">
+                {log.description}
               </span>
+            )}
+            {log.category && (
+              <CategoryBadge name={log.category.name} color={log.category.color} />
             )}
             {log.method && (
               <span className="text-xs text-muted-foreground">

@@ -16,6 +16,7 @@ export interface LogCategory {
   workspaceId: number;
   name: string;
   sortOrder: number;
+  color?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,6 +39,7 @@ export interface Log {
   methodId?: number | null;
   date: Date;
   amount: number;
+  description?: string | null;
   memo?: string | null;
   userId: number;
   createdAt: Date;
@@ -60,6 +62,7 @@ export interface CreateLogDto {
   type: LogType;
   amount: number;
   date: string; // ISO date string
+  description?: string;
   memo?: string;
   categoryId?: number;
   methodId?: number;
@@ -69,6 +72,7 @@ export interface UpdateLogDto {
   type?: LogType;
   amount?: number;
   date?: string;
+  description?: string | null;
   memo?: string | null;
   categoryId?: number | null;
   methodId?: number | null;
@@ -97,11 +101,13 @@ export interface LogListResponse {
 export interface CreateCategoryDto {
   name: string;
   sortOrder?: number;
+  color?: string;
 }
 
 export interface UpdateCategoryDto {
   name?: string;
   sortOrder?: number;
+  color?: string | null;
 }
 
 // Method DTOs

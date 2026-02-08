@@ -62,6 +62,10 @@ export class Log {
   @Column({ type: "decimal", precision: 15, scale: 2 })
   amount: number;
 
+  // 내역
+  @Column({ nullable: true, type: "text" })
+  description?: string | null;
+
   // 메모
   @Column({ nullable: true, type: "text" })
   memo?: string | null;

@@ -43,6 +43,7 @@ export function LogFormDialog({
   const { methods, fetchMethods } = useMethodStore();
 
   const [type, setType] = useState<LogType>(LogType.EXPENSE);
+  const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(formatDateForInput(new Date()));
   const [memo, setMemo] = useState("");
@@ -62,6 +63,7 @@ export function LogFormDialog({
   useEffect(() => {
     if (log) {
       setType(log.type);
+      setDescription(log.description || "");
       setAmount(log.amount.toLocaleString());
       setDate(formatDateForInput(log.date));
       setMemo(log.memo || "");
@@ -69,6 +71,7 @@ export function LogFormDialog({
       setMethodId(log.methodId ? String(log.methodId) : "");
     } else {
       setType(LogType.EXPENSE);
+      setDescription("");
       setAmount("");
       setDate(formatDateForInput(new Date()));
       setMemo("");
@@ -101,6 +104,7 @@ export function LogFormDialog({
         type,
         amount: Number(amount.replace(/,/g, "")),
         date,
+        description: description || undefined,
         memo: memo || undefined,
         categoryId: categoryId ? Number(categoryId) : null,
         methodId: methodId ? Number(methodId) : null,
@@ -130,6 +134,15 @@ export function LogFormDialog({
                 <SelectItem value={LogType.INCOME}>수입</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>내역</Label>
+            <Input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="내역을 입력하세요"
+            />
           </div>
 
           <div className="space-y-2">
@@ -196,7 +209,7 @@ export function LogFormDialog({
           >
             취소
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting || !amount || !date}>
+          <Button onClick={handleSubmit} disabled={isSubmitting || !description || !amount || !date}>
             {isSubmitting ? "저장 중..." : isEditMode ? "수정" : "추가"}
           </Button>
         </DialogFooter>

@@ -7,6 +7,7 @@ import {
   IsEnum,
   Min,
   IsDateString,
+  Matches,
 } from "class-validator";
 import {
   type LogCategory as LogCategoryInterface,
@@ -50,6 +51,9 @@ export class CategoryResponseDto implements LogCategoryInterface {
   sortOrder: number;
 
   @Expose()
+  color?: string | null;
+
+  @Expose()
   createdAt: Date;
 
   @Expose()
@@ -78,6 +82,11 @@ export class CreateCategoryRequestDto implements CreateCategoryDtoInterface {
   @IsOptional()
   @IsNumber()
   sortOrder?: number;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^#[0-9A-Fa-f]{6}$/, { message: "유효한 hex 색상 코드를 입력해주세요." })
+  color?: string;
 }
 
 export class UpdateCategoryRequestDto implements UpdateCategoryDtoInterface {
@@ -89,6 +98,10 @@ export class UpdateCategoryRequestDto implements UpdateCategoryDtoInterface {
   @IsOptional()
   @IsNumber()
   sortOrder?: number;
+
+  @IsOptional()
+  @Matches(/^#[0-9A-Fa-f]{6}$/, { message: "유효한 hex 색상 코드를 입력해주세요." })
+  color?: string | null;
 }
 
 // Method DTOs
@@ -174,6 +187,9 @@ export class LogResponseDto implements LogWithRelations {
   amount: number;
 
   @Expose()
+  description?: string | null;
+
+  @Expose()
   memo?: string | null;
 
   @Expose()
@@ -207,6 +223,7 @@ export class LogResponseDto implements LogWithRelations {
     dto.methodId = entity.methodId ?? null;
     dto.date = entity.date;
     dto.amount = Number(entity.amount);
+    dto.description = entity.description ?? null;
     dto.memo = entity.memo ?? null;
     dto.userId = entity.userId;
     dto.createdAt = entity.createdAt;
@@ -266,6 +283,10 @@ export class CreateLogRequestDto implements CreateLogDtoInterface {
 
   @IsOptional()
   @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
   memo?: string;
 
   @IsOptional()
@@ -290,6 +311,10 @@ export class UpdateLogRequestDto implements UpdateLogDtoInterface {
   @IsOptional()
   @IsDateString({}, { message: "유효한 날짜 형식을 입력해주세요." })
   date?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string | null;
 
   @IsOptional()
   @IsString()

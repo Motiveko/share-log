@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus, Palette } from "lucide-react";
 import { addToast } from "@web/features/toast/toast-service";
 import { getErrorMessage } from "@web/lib/error";
 import {
@@ -10,6 +10,9 @@ import {
 } from "@web/components/ui/dialog";
 import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@web/components/ui/popover";
+import { ColorPicker } from "@web/components/ui/color-picker";
+import { CategoryBadge } from "@web/features/category/components/category-badge";
 import { useCategoryStore } from "@web/features/category/store";
 import type { LogCategory } from "@repo/interfaces";
 import { modalService } from "@web/features/modal";
@@ -31,8 +34,10 @@ export function CategoryManageDialog({
     useCategoryStore();
 
   const [newName, setNewName] = useState("");
+  const [newColor, setNewColor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [editingColor, setEditingColor] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -45,8 +50,12 @@ export function CategoryManageDialog({
     if (isSubmitting || !newName.trim()) return;
     setIsSubmitting(true);
     try {
-      await createCategory(workspaceId, { name: newName.trim() });
+      await createCategory(workspaceId, {
+        name: newName.trim(),
+        ...(newColor && { color: newColor }),
+      });
       setNewName("");
+      setNewColor(null);
     } catch (error) {
       addToast({ type: "error", message: getErrorMessage(error) });
     } finally {
@@ -57,15 +66,22 @@ export function CategoryManageDialog({
   const handleStartEdit = (category: LogCategory) => {
     setEditingId(category.id);
     setEditingName(category.name);
+    setEditingColor(category.color ?? null);
   };
 
   const handleSaveEdit = async () => {
     if (!editingId || !editingName.trim()) return;
     setIsSubmitting(true);
     try {
-      await updateCategory(workspaceId, editingId, { name: editingName.trim() });
+      const editingCategory = categories.find((c) => c.id === editingId);
+      const colorChanged = editingColor !== (editingCategory?.color ?? null);
+      await updateCategory(workspaceId, editingId, {
+        name: editingName.trim(),
+        ...(colorChanged && { color: editingColor }),
+      });
       setEditingId(null);
       setEditingName("");
+      setEditingColor(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -74,6 +90,7 @@ export function CategoryManageDialog({
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditingName("");
+    setEditingColor(null);
   };
 
   const handleDelete = async (categoryId: number) => {
@@ -106,6 +123,23 @@ export function CategoryManageDialog({
                 }
               }}
             />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon" className="shrink-0">
+                  {newColor ? (
+                    <div
+                      className="w-4 h-4 rounded-sm"
+                      style={{ backgroundColor: newColor }}
+                    />
+                  ) : (
+                    <Palette className="h-4 w-4" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto">
+                <ColorPicker value={newColor} onChange={setNewColor} />
+              </PopoverContent>
+            </Popover>
             <Button onClick={handleCreate} disabled={isSubmitting || !newName.trim()}>
               <Plus className="h-4 w-4 mr-1" />
               추가
@@ -119,7 +153,7 @@ export function CategoryManageDialog({
                 className="flex items-center justify-between p-2 border rounded"
               >
                 {editingId === category.id ? (
-                  <div className="flex gap-2 flex-1">
+                  <div className="flex gap-2 flex-1 items-center">
                     <Input
                       value={editingName}
                       onChange={(e) => setEditingName(e.target.value)}
@@ -129,6 +163,23 @@ export function CategoryManageDialog({
                       }}
                       autoFocus
                     />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="icon" className="shrink-0 h-8 w-8">
+                          {editingColor ? (
+                            <div
+                              className="w-4 h-4 rounded-sm"
+                              style={{ backgroundColor: editingColor }}
+                            />
+                          ) : (
+                            <Palette className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto">
+                        <ColorPicker value={editingColor} onChange={setEditingColor} />
+                      </PopoverContent>
+                    </Popover>
                     <Button size="sm" onClick={handleSaveEdit} disabled={isSubmitting}>
                       저장
                     </Button>
@@ -143,7 +194,7 @@ export function CategoryManageDialog({
                   </div>
                 ) : (
                   <>
-                    <span>{category.name}</span>
+                    <CategoryBadge name={category.name} color={category.color} />
                     <div className="flex gap-1">
                       <Button
                         variant="ghost"

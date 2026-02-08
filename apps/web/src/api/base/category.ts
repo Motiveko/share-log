@@ -13,6 +13,7 @@ const CategorySchema: z.ZodType<LogCategory> = z.object({
   workspaceId: z.number(),
   name: z.string(),
   sortOrder: z.number(),
+  color: z.string().nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
